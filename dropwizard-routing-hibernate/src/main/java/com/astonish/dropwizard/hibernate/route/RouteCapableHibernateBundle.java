@@ -43,6 +43,13 @@ public abstract class RouteCapableHibernateBundle<T extends Configuration> imple
     protected void configure(org.hibernate.cfg.Configuration configuration) {
     }
 
+    /**
+     * @return the sessionFactoryMap
+     */
+    public ImmutableMap<Optional<String>, SessionFactory> getSessionFactoryMap() {
+        return ImmutableMap.copyOf(sessionFactoryMap);
+    }
+
     @Override
     public final void run(T configuration, Environment environment) throws Exception {
         final Map<Optional<String>, SessionFactory> sessionFactories = new LinkedHashMap<>();

@@ -29,6 +29,7 @@
     <modules>
         <module>dropwizard-routing-db</module>
         <module>dropwizard-routing-hibernate</module>
+        <module>dropwizard-routing-jersey</module>
     </modules>
 
     <properties>
