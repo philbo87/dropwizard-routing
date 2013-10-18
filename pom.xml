@@ -9,13 +9,13 @@
     </prerequisites>
 
     <groupId>com.astonish</groupId>
-    <artifactId>dropwizard-route</artifactId>
+    <artifactId>dropwizard-routing</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Adds database route capability to the Dropwizard project.</name>
-    <url>http://dropwizardroute.astonish.com/</url>
+    <name>Adds database routing capability to the Dropwizard project.</name>
+    <url>http://dropwizardrouting.astonish.com/</url>
     <description>
-        Adds database route capability to the Dropwizard project (http://dropwizard.codahale.com).
+        Adds database routing capability to the Dropwizard project (http://dropwizard.codahale.com).
     </description>
 
     <distributionManagement>
@@ -29,7 +29,9 @@
     <modules>
         <module>dropwizard-routing-db</module>
         <module>dropwizard-routing-hibernate</module>
+        <module>dropwizard-routing-migrations</module>
         <module>dropwizard-routing-jersey</module>
+        <module>dropwizard-routing-example</module>
     </modules>
 
     <properties>
@@ -64,15 +66,15 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git@github.com/Astonish-Results/dropwizard-route</connection>
-        <developerConnection>scm:git:git@github.com/Astonish-Results/dropwizard-route.git</developerConnection>
-        <url>http://github.com/Astonish-Results/dropwizard-route</url>
+        <connection>scm:git:git@github.com/Astonish-Results/dropwizard-routing</connection>
+        <developerConnection>scm:git:git@github.com/Astonish-Results/dropwizard-routing.git</developerConnection>
+        <url>http://github.com/Astonish-Results/dropwizard-routing</url>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>github</system>
-        <url>http://github.com/Astonish-Results/dropwizard-route/issues#issue/</url>
+        <url>http://github.com/Astonish-Results/dropwizard-routing/issues#issue/</url>
     </issueManagement>
 
     <dependencies>

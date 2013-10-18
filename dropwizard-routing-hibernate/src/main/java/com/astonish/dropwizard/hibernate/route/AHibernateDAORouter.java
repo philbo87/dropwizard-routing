@@ -31,9 +31,14 @@ public abstract class AHibernateDAORouter extends DAORouter {
         checkState(!sessionFactoryMap.isEmpty());
 
         final Map<Optional<String>, ImmutableMap<Class<?>, Object>> daosByRoute = new LinkedHashMap<>();
+        String defaultRouteName = null;
         for (Entry<Optional<String>, SessionFactory> e : sessionFactoryMap.entrySet()) {
             SessionFactory factory = checkNotNull(e.getValue());
             daosByRoute.put(e.getKey(), constructDAOs(factory));
+
+            if (null == defaultRouteName && e.getKey().isPresent()) {
+                setDefaultRouteName(e.getKey().get());
+            }
         }
 
         this.daosByRoute = ImmutableMap.copyOf(daosByRoute);

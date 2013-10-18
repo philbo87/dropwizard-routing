@@ -15,6 +15,22 @@ import com.google.common.collect.ImmutableMap;
 public class DAORouter {
     protected ImmutableMap<Optional<String>, ImmutableMap<Class<?>, Object>> daosByRoute = ImmutableMap
             .<Optional<String>, ImmutableMap<Class<?>, Object>> of();
+    private String defaultRouteName;
+
+    /**
+     * @return the defaultRouteName
+     */
+    public String getDefaultRouteName() {
+        return defaultRouteName;
+    }
+
+    /**
+     * @param defaultRouteName
+     *            the defaultRouteName to set
+     */
+    public void setDefaultRouteName(String defaultRouteName) {
+        this.defaultRouteName = defaultRouteName;
+    }
 
     /**
      * Retrieves a type-casted DAO from the {@link DAORouter}.
@@ -42,5 +58,13 @@ public class DAORouter {
      */
     public Set<Optional<String>> keySet() {
         return daosByRoute.keySet();
+    }
+
+    /**
+     * @return the default route name
+     */
+    public String currentRoute() {
+        final String currentRoute = RouteStore.getInstance().getRoute();
+        return null == currentRoute ? defaultRouteName : currentRoute;
     }
 }
