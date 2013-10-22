@@ -17,7 +17,8 @@
  */
 package com.astonish.dropwizard.routing.db;
 
-import com.codahale.dropwizard.Configuration;
+import io.dropwizard.Configuration;
+
 import com.google.common.collect.ImmutableList;
 
 /**

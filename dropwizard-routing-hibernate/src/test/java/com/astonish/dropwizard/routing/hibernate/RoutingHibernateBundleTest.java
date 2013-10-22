@@ -17,15 +17,16 @@
  */
 package com.astonish.dropwizard.routing.hibernate;
 
+import io.dropwizard.Configuration;
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.hibernate.SessionFactoryHealthCheck;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+
 import com.astonish.dropwizard.routing.db.DataSourceRoute;
 import com.astonish.dropwizard.routing.hibernate.RoutingHibernateBundle;
 import com.astonish.dropwizard.routing.hibernate.RoutingSessionFactoryFactory;
-import com.codahale.dropwizard.Configuration;
-import com.codahale.dropwizard.db.DataSourceFactory;
-import com.codahale.dropwizard.hibernate.SessionFactoryHealthCheck;
-import com.codahale.dropwizard.jersey.setup.JerseyEnvironment;
-import com.codahale.dropwizard.setup.Bootstrap;
-import com.codahale.dropwizard.setup.Environment;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;

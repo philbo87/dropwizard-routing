@@ -17,6 +17,11 @@
  */
 package com.astonish.dropwizard.routing.hibernate;
 
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.db.ManagedDataSource;
+import io.dropwizard.hibernate.SessionFactoryManager;
+import io.dropwizard.setup.Environment;
+
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -33,10 +38,6 @@ import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.dropwizard.db.DataSourceFactory;
-import com.codahale.dropwizard.db.ManagedDataSource;
-import com.codahale.dropwizard.hibernate.SessionFactoryManager;
-import com.codahale.dropwizard.setup.Environment;
 import com.google.common.collect.Sets;
 
 /**

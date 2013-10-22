@@ -17,17 +17,18 @@
  */
 package com.astonish.dropwizard.routing.hibernate;
 
+import io.dropwizard.Configuration;
+import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.hibernate.SessionFactoryHealthCheck;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.astonish.dropwizard.routing.db.DataSourceRoute;
 import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
-import com.codahale.dropwizard.Configuration;
-import com.codahale.dropwizard.ConfiguredBundle;
-import com.codahale.dropwizard.db.DataSourceFactory;
-import com.codahale.dropwizard.hibernate.SessionFactoryHealthCheck;
-import com.codahale.dropwizard.setup.Bootstrap;
-import com.codahale.dropwizard.setup.Environment;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;

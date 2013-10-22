@@ -17,12 +17,13 @@
  */
 package com.astonish.dropwizard.routing.migrations;
 
+import io.dropwizard.Bundle;
+import io.dropwizard.Configuration;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Generics;
+
 import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
-import com.codahale.dropwizard.Bundle;
-import com.codahale.dropwizard.Configuration;
-import com.codahale.dropwizard.setup.Bootstrap;
-import com.codahale.dropwizard.setup.Environment;
-import com.codahale.dropwizard.util.Generics;
 
 /**
  * Routing migrations bundle.

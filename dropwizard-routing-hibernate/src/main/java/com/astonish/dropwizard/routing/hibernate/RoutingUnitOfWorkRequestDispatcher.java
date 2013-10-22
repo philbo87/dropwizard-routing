@@ -18,9 +18,9 @@
 package com.astonish.dropwizard.routing.hibernate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import io.dropwizard.hibernate.UnitOfWork;
 
 import com.astonish.dropwizard.routing.db.RouteStore;
-import com.codahale.dropwizard.hibernate.UnitOfWork;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.NotFoundException;

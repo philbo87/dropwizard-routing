@@ -18,11 +18,12 @@
 package com.astonish.dropwizard.routing.migrations;
 
 import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
-import com.codahale.dropwizard.Configuration;
 import com.google.common.collect.Maps;
 import liquibase.Liquibase;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+
+import io.dropwizard.Configuration;
 
 import java.util.SortedMap;
 

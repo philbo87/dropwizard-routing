@@ -18,7 +18,6 @@
 package com.astonish.dropwizard.routing.migrations;
 
 import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
-import com.codahale.dropwizard.Configuration;
 import com.google.common.base.Charsets;
 import liquibase.Liquibase;
 import liquibase.diff.DiffGeneratorFactory;
@@ -40,6 +39,8 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+
+import io.dropwizard.Configuration;
 
 import java.io.PrintStream;
 import java.util.HashSet;

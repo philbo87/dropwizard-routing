@@ -19,13 +19,14 @@ package com.example.barista.db;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import io.dropwizard.hibernate.AbstractDAO;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
-import com.codahale.dropwizard.hibernate.AbstractDAO;
 import com.example.barista.core.Barista;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;

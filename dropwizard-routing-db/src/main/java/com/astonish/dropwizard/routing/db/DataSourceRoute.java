@@ -17,9 +17,9 @@
  */
 package com.astonish.dropwizard.routing.db;
 
-import javax.validation.constraints.NotNull;
+import io.dropwizard.db.DataSourceFactory;
 
-import com.codahale.dropwizard.db.DataSourceFactory;
+import javax.validation.constraints.NotNull;
 
 /**
  * Keyed {@link DataSourceFactory}.

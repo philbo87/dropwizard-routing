@@ -17,6 +17,8 @@
  */
 package com.example.barista.resource;
 
+import io.dropwizard.hibernate.UnitOfWork;
+
 import java.util.Date;
 import java.util.List;
 
@@ -30,7 +32,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import com.codahale.dropwizard.hibernate.UnitOfWork;
 import com.example.barista.core.Barista;
 import com.example.barista.core.Drink;
 import com.example.barista.core.Recipe;

@@ -19,6 +19,8 @@ package com.example.barista.resource;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import io.dropwizard.hibernate.UnitOfWork;
+
 import java.util.List;
 
 import javax.validation.Valid;
@@ -31,7 +33,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import com.codahale.dropwizard.hibernate.UnitOfWork;
 import com.example.barista.core.Ingredient;
 import com.example.barista.core.Recipe;
 import com.example.barista.db.routing.BaristaDaoRouter;

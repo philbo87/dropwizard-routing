@@ -19,12 +19,6 @@ package com.astonish.dropwizard.routing.migrations;
 
 import com.astonish.dropwizard.routing.db.DataSourceRoute;
 import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
-import com.codahale.dropwizard.Configuration;
-import com.codahale.dropwizard.cli.ConfiguredCommand;
-import com.codahale.dropwizard.db.DataSourceFactory;
-import com.codahale.dropwizard.db.ManagedDataSource;
-import com.codahale.dropwizard.migrations.CloseableLiquibase;
-import com.codahale.dropwizard.setup.Bootstrap;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableList;
 
@@ -33,6 +27,13 @@ import liquibase.exception.LiquibaseException;
 import liquibase.exception.ValidationFailedException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+
+import io.dropwizard.Configuration;
+import io.dropwizard.cli.ConfiguredCommand;
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.db.ManagedDataSource;
+import io.dropwizard.migrations.CloseableLiquibase;
+import io.dropwizard.setup.Bootstrap;
 
 import java.sql.SQLException;
 

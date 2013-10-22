@@ -17,13 +17,14 @@
  */
 package com.example.barista;
 
+import io.dropwizard.Application;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+
 import com.astonish.dropwizard.routing.db.DataSourceRoute;
 import com.astonish.dropwizard.routing.db.filter.RoutingRequestFilterHeaderImpl;
 import com.astonish.dropwizard.routing.hibernate.RoutingHibernateBundle;
 import com.astonish.dropwizard.routing.migrations.RoutingMigrationsBundle;
-import com.codahale.dropwizard.Application;
-import com.codahale.dropwizard.setup.Bootstrap;
-import com.codahale.dropwizard.setup.Environment;
 import com.example.barista.core.Barista;
 import com.example.barista.core.Ingredient;
 import com.example.barista.core.Recipe;

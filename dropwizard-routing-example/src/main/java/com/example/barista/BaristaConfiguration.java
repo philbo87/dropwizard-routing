@@ -17,11 +17,12 @@
  */
 package com.example.barista;
 
+import io.dropwizard.Configuration;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.astonish.dropwizard.routing.db.DataSourceRoute;
-import com.codahale.dropwizard.Configuration;
 import com.google.common.collect.ImmutableList;
 
 /**
