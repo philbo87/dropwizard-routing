@@ -101,11 +101,14 @@ Finally create your application and add the hibernate and migrations bundle, ins
         }
     }
     
+You can then access all your DAOs via the DAORouter's getDAO(Class<?>) method or provide helper methods in your DAORouter for easier access.
+    
 Dropwizard Routing Migrations
 ------------------
 The dropwizard routing migrations module is a direct replica of the dropwizard migrations module with an extra '--route' option. Also the migrationDatabase has been removed and the module will use the same database information as your application. If you specify a route the db command will only execute on the specified route. If you do not specify a route the db command will execute on all the routes. The 'db' command has been replaced with 'routingdb'.
 
 example:
+
     java -jar my.jar routingdb migrate --route starbucks my.yml
 
 More Information
