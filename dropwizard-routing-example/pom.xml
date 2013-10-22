@@ -39,12 +39,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.astonish</groupId>
-            <artifactId>dropwizard-routing-hibernate-headerimpl</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.3.173</version>
