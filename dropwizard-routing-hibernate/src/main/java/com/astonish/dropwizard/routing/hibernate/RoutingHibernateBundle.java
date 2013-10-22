@@ -43,6 +43,7 @@ public abstract class RoutingHibernateBundle<T extends Configuration> implements
     private ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap;
     private final ImmutableList<Class<?>> entities;
     private final RoutingSessionFactoryFactory sessionFactoryFactory;
+    private String defaultRouteName;
 
     /**
      * @param entity
@@ -85,6 +86,13 @@ public abstract class RoutingHibernateBundle<T extends Configuration> implements
         return ImmutableMap.copyOf(sessionFactoryMap);
     }
 
+    /**
+     * @return the defaultRouteName
+     */
+    public String getDefaultRouteName() {
+        return defaultRouteName;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -105,6 +113,7 @@ public abstract class RoutingHibernateBundle<T extends Configuration> implements
             // the primary url will be the default route when no route key is provided
             if (sessionFactories.isEmpty()) {
                 sessionFactories.put(Optional.<String> absent(), sessionFactory);
+                defaultRouteName = routeKey;
             }
             sessionFactories.put(Optional.of(routeKey), sessionFactory);
         }

@@ -37,28 +37,28 @@ public abstract class AbstractHibernateDAORouter extends DAORouter {
     /**
      * @param sessionFactoryMap
      *            map of {@link Optional} route keys to their corresponding {@link SessionFactory}.
+     * @param defaultRouteName
+     *            the default route name
      * @throws NullPointerException
      *             if sessionFactoryMap is null or any {@link Entry} in sessionFactoryMap has a null value with a
      *             non-null key
      * @throws IllegalStateException
      *             if sessionFactoryMap is empty
      */
-    public AbstractHibernateDAORouter(final ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap) {
+    public AbstractHibernateDAORouter(final ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap,
+            final String defaultRouteName) {
         checkNotNull(sessionFactoryMap);
+        checkNotNull(defaultRouteName);
         checkState(!sessionFactoryMap.isEmpty());
 
         final Map<Optional<String>, ImmutableMap<Class<?>, Object>> daosByRoute = new LinkedHashMap<>();
-        String defaultRouteName = null;
         for (Entry<Optional<String>, SessionFactory> e : sessionFactoryMap.entrySet()) {
             SessionFactory factory = checkNotNull(e.getValue());
             daosByRoute.put(e.getKey(), constructDAOs(factory));
-
-            if (null == defaultRouteName && e.getKey().isPresent()) {
-                setDefaultRouteName(e.getKey().get());
-            }
         }
 
         this.daosByRoute = ImmutableMap.copyOf(daosByRoute);
+        setDefaultRouteName(defaultRouteName);
     }
 
     /**

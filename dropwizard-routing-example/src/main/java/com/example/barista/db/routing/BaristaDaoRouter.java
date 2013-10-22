@@ -33,8 +33,8 @@ public class BaristaDaoRouter extends AbstractHibernateDAORouter {
     /**
      * @param sessionFactoryMap
      */
-    public BaristaDaoRouter(ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap) {
-        super(sessionFactoryMap);
+    public BaristaDaoRouter(ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap, String defaultRouteName) {
+        super(sessionFactoryMap, defaultRouteName);
     }
 
     /*

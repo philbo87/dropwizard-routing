@@ -56,7 +56,7 @@ public class AbstractHibernateDAORouterTest {
         sessionFactoryMap.put(Optional.of(FACTORY1_ROUTE_KEY), factory1);
         sessionFactoryMap.put(Optional.of(FACTORY2_ROUTE_KEY), factory2);
 
-        daoRouter = new DAORouter(ImmutableMap.copyOf(sessionFactoryMap));
+        daoRouter = new DAORouter(ImmutableMap.copyOf(sessionFactoryMap), FACTORY1_ROUTE_KEY);
         RouteStore.getInstance().setRoute(null);
     }
 
@@ -65,7 +65,20 @@ public class AbstractHibernateDAORouterTest {
      */
     @Test(expected = NullPointerException.class)
     public void nullSessionFactoryMap() {
-        new DAORouter(null);
+        new DAORouter(null, FACTORY1_ROUTE_KEY);
+    }
+
+    /**
+     * Null defaultRouteName results in a {@link NullPointerException}
+     */
+    @Test(expected = NullPointerException.class)
+    public void nullDefaultRouteName() {
+        final Map<Optional<String>, SessionFactory> sessionFactoryMap = new LinkedHashMap<>();
+        sessionFactoryMap.put(Optional.<String> absent(), factory1);
+        sessionFactoryMap.put(Optional.of(FACTORY1_ROUTE_KEY), factory1);
+        sessionFactoryMap.put(Optional.of(FACTORY2_ROUTE_KEY), factory2);
+
+        new DAORouter(ImmutableMap.copyOf(sessionFactoryMap), null);
     }
 
     /**
@@ -73,7 +86,7 @@ public class AbstractHibernateDAORouterTest {
      */
     @Test(expected = IllegalStateException.class)
     public void emptySessionFactoryMap() {
-        new DAORouter(ImmutableMap.<Optional<String>, SessionFactory> of());
+        new DAORouter(ImmutableMap.<Optional<String>, SessionFactory> of(), FACTORY1_ROUTE_KEY);
     }
 
     /**
@@ -84,7 +97,7 @@ public class AbstractHibernateDAORouterTest {
         final Map<Optional<String>, SessionFactory> sessionFactoryMap = new LinkedHashMap<>();
         sessionFactoryMap.put(Optional.of(FACTORY1_ROUTE_KEY), null);
 
-        new DAORouter(ImmutableMap.copyOf(sessionFactoryMap));
+        new DAORouter(ImmutableMap.copyOf(sessionFactoryMap), FACTORY1_ROUTE_KEY);
     }
 
     /**
@@ -124,8 +137,8 @@ class DAORouter extends AbstractHibernateDAORouter {
     /**
      * @param sessionFactoryMap
      */
-    public DAORouter(ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap) {
-        super(sessionFactoryMap);
+    public DAORouter(ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap, String defaultRouteName) {
+        super(sessionFactoryMap, defaultRouteName);
     }
 
     /*
