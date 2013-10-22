@@ -30,7 +30,6 @@
         <module>dropwizard-routing-db</module>
         <module>dropwizard-routing-hibernate</module>
         <module>dropwizard-routing-migrations</module>
-        <module>dropwizard-routing-jersey</module>
         <module>dropwizard-routing-example</module>
     </modules>
 
@@ -84,10 +83,12 @@
             <version>4.11</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Had issues getting PowerMock 1.5.1 to work with Mockito 1.9.5 -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
-            <version>1.9.5</version>
+            <version>1.9.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

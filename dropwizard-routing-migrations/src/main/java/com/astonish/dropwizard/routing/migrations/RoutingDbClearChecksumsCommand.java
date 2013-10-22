@@ -15,35 +15,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.example.barista;
+package com.astonish.dropwizard.routing.migrations;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.astonish.dropwizard.routing.db.DataSourceRoute;
+import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
 import com.codahale.dropwizard.Configuration;
-import com.google.common.collect.ImmutableList;
+import liquibase.Liquibase;
+import net.sourceforge.argparse4j.inf.Namespace;
 
-/**
- * Configuration for the Barista application.
- */
-public class BaristaConfiguration extends Configuration {
-    @Valid
-    @NotNull
-    private ImmutableList<DataSourceRoute> databases;
-
-    /**
-     * @return the databases
-     */
-    public ImmutableList<DataSourceRoute> getDatabases() {
-        return databases;
+public class RoutingDbClearChecksumsCommand<T extends Configuration> extends AbstractRoutingLiquibaseCommand<T> {
+    public RoutingDbClearChecksumsCommand(RoutingDatabaseConfiguration<T> strategy, Class<T> configurationClass) {
+        super("clear-checksums", "Removes all saved checksums from the database log", strategy, configurationClass);
     }
 
-    /**
-     * @param databases
-     *            the databases to set
-     */
-    public void setDatabases(ImmutableList<DataSourceRoute> databases) {
-        this.databases = databases;
+    @Override
+    public void run(Namespace namespace, Liquibase liquibase) throws Exception {
+        liquibase.clearCheckSums();
     }
 }

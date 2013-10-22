@@ -15,35 +15,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.example.barista;
+package com.astonish.dropwizard.routing.migrations;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.astonish.dropwizard.routing.db.DataSourceRoute;
+import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
+import com.codahale.dropwizard.Bundle;
 import com.codahale.dropwizard.Configuration;
-import com.google.common.collect.ImmutableList;
+import com.codahale.dropwizard.setup.Bootstrap;
+import com.codahale.dropwizard.setup.Environment;
+import com.codahale.dropwizard.util.Generics;
 
 /**
- * Configuration for the Barista application.
+ * Routing migrations bundle.
  */
-public class BaristaConfiguration extends Configuration {
-    @Valid
-    @NotNull
-    private ImmutableList<DataSourceRoute> databases;
-
-    /**
-     * @return the databases
-     */
-    public ImmutableList<DataSourceRoute> getDatabases() {
-        return databases;
+public abstract class RoutingMigrationsBundle<T extends Configuration> implements Bundle,
+        RoutingDatabaseConfiguration<T> {
+    @Override
+    public final void initialize(Bootstrap<?> bootstrap) {
+        final Class<T> klass = Generics.getTypeParameter(getClass(), Configuration.class);
+        bootstrap.addCommand(new RoutingDbCommand<>(this, klass));
     }
 
-    /**
-     * @param databases
-     *            the databases to set
-     */
-    public void setDatabases(ImmutableList<DataSourceRoute> databases) {
-        this.databases = databases;
+    @Override
+    public final void run(Environment environment) {
+        // nothing doing
     }
 }

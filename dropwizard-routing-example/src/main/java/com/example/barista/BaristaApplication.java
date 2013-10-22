@@ -17,10 +17,10 @@
  */
 package com.example.barista;
 
-import com.astonish.dropwizard.db.route.DataSourceRoute;
-import com.astonish.dropwizard.hibernate.route.RouteCapableHibernateBundle;
-import com.astonish.dropwizard.jersey.route.filter.RouteRequestFilterHeaderImpl;
-import com.astonish.dropwizard.migrations.routing.RoutingMigrationsBundle;
+import com.astonish.dropwizard.routing.db.DataSourceRoute;
+import com.astonish.dropwizard.routing.db.filter.RoutingRequestFilterHeaderImpl;
+import com.astonish.dropwizard.routing.hibernate.RoutingHibernateBundle;
+import com.astonish.dropwizard.routing.migrations.RoutingMigrationsBundle;
 import com.codahale.dropwizard.Application;
 import com.codahale.dropwizard.setup.Bootstrap;
 import com.codahale.dropwizard.setup.Environment;
@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableList;
  * The Barista application.
  */
 public class BaristaApplication extends Application<BaristaConfiguration> {
-    private final RouteCapableHibernateBundle<BaristaConfiguration> hibernateBundle = new RouteCapableHibernateBundle<BaristaConfiguration>(
+    private final RoutingHibernateBundle<BaristaConfiguration> hibernateBundle = new RoutingHibernateBundle<BaristaConfiguration>(
             Barista.class, Ingredient.class, Recipe.class) {
         @Override
         public ImmutableList<DataSourceRoute> getDataSourceRoutes(BaristaConfiguration configuration) {
@@ -83,7 +83,7 @@ public class BaristaApplication extends Application<BaristaConfiguration> {
     @Override
     @SuppressWarnings("unchecked")
     public void run(BaristaConfiguration config, Environment environment) throws Exception {
-        environment.jersey().getResourceConfig().getContainerRequestFilters().add(new RouteRequestFilterHeaderImpl());
+        environment.jersey().getResourceConfig().getContainerRequestFilters().add(new RoutingRequestFilterHeaderImpl());
 
         final BaristaDaoRouter daoRouter = new BaristaDaoRouter(hibernateBundle.getSessionFactoryMap());
         environment.jersey().register(new BaristaResource(daoRouter));

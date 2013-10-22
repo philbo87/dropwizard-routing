@@ -80,27 +80,5 @@
             onUpdate="RESTRICT"
             referencedColumnNames="id"
             referencedTableName="ingredient"/>
-
-        <insert tableName="barista">
-            <column name="name">matt</column>
-        </insert>
-        <insert tableName="ingredient">
-            <column name="name">espresso</column>
-        </insert>
-        <insert tableName="ingredient">
-            <column name="name">frothed milk</column>
-        </insert>
-        <insert tableName="recipe">
-            <column name="name">latte</column>
-            <column name="instructions">Brew espresso and fill with frothed milk.</column>
-        </insert>
-        <insert tableName="recipe_ingredient">
-            <column name="recipe_id">1</column>
-            <column name="ingredient_id">1</column>
-        </insert>
-        <insert tableName="recipe_ingredient">
-            <column name="recipe_id">1</column>
-            <column name="ingredient_id">2</column>
-        </insert>
     </changeSet>
 </databaseChangeLog>

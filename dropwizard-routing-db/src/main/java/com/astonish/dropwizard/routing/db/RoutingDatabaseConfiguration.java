@@ -15,35 +15,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.example.barista;
+package com.astonish.dropwizard.routing.db;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.astonish.dropwizard.routing.db.DataSourceRoute;
 import com.codahale.dropwizard.Configuration;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Configuration for the Barista application.
+ * Routing database configuration.
  */
-public class BaristaConfiguration extends Configuration {
-    @Valid
-    @NotNull
-    private ImmutableList<DataSourceRoute> databases;
-
+public interface RoutingDatabaseConfiguration<T extends Configuration> {
     /**
-     * @return the databases
+     * First entry will be the default route.
+     * @param configuration
+     *            service configuration
+     * @return the list of {@link DataSourceRoute}
      */
-    public ImmutableList<DataSourceRoute> getDatabases() {
-        return databases;
-    }
-
-    /**
-     * @param databases
-     *            the databases to set
-     */
-    public void setDatabases(ImmutableList<DataSourceRoute> databases) {
-        this.databases = databases;
-    }
+    ImmutableList<DataSourceRoute> getDataSourceRoutes(T configuration);
 }

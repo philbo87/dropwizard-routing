@@ -19,7 +19,7 @@ package com.example.barista.db.routing;
 
 import org.hibernate.SessionFactory;
 
-import com.astonish.dropwizard.hibernate.route.AHibernateDAORouter;
+import com.astonish.dropwizard.routing.hibernate.AbstractHibernateDAORouter;
 import com.example.barista.db.BaristaDAO;
 import com.example.barista.db.IngredientDAO;
 import com.example.barista.db.RecipeDAO;
@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Schema router for the Barista application.
  */
-public class BaristaDaoRouter extends AHibernateDAORouter {
+public class BaristaDaoRouter extends AbstractHibernateDAORouter {
     /**
      * @param sessionFactoryMap
      */
