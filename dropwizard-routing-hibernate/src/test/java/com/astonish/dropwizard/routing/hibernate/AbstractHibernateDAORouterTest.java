@@ -31,7 +31,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.astonish.dropwizard.routing.db.RouteStore;
 import com.astonish.dropwizard.routing.hibernate.AbstractHibernateDAORouter;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -51,12 +50,11 @@ public class AbstractHibernateDAORouterTest {
 
     @Before
     public void setup() {
-        final Map<Optional<String>, SessionFactory> sessionFactoryMap = new LinkedHashMap<>();
-        sessionFactoryMap.put(Optional.<String> absent(), factory1);
-        sessionFactoryMap.put(Optional.of(FACTORY1_ROUTE_KEY), factory1);
-        sessionFactoryMap.put(Optional.of(FACTORY2_ROUTE_KEY), factory2);
+        final Map<String, SessionFactory> sessionFactoryMap = new LinkedHashMap<>();
+        sessionFactoryMap.put(FACTORY1_ROUTE_KEY, factory1);
+        sessionFactoryMap.put(FACTORY2_ROUTE_KEY, factory2);
 
-        daoRouter = new DAORouter(ImmutableMap.copyOf(sessionFactoryMap), FACTORY1_ROUTE_KEY);
+        daoRouter = new DAORouter(ImmutableMap.copyOf(sessionFactoryMap));
         RouteStore.getInstance().setRoute(null);
     }
 
@@ -65,20 +63,7 @@ public class AbstractHibernateDAORouterTest {
      */
     @Test(expected = NullPointerException.class)
     public void nullSessionFactoryMap() {
-        new DAORouter(null, FACTORY1_ROUTE_KEY);
-    }
-
-    /**
-     * Null defaultRouteName results in a {@link NullPointerException}
-     */
-    @Test(expected = NullPointerException.class)
-    public void nullDefaultRouteName() {
-        final Map<Optional<String>, SessionFactory> sessionFactoryMap = new LinkedHashMap<>();
-        sessionFactoryMap.put(Optional.<String> absent(), factory1);
-        sessionFactoryMap.put(Optional.of(FACTORY1_ROUTE_KEY), factory1);
-        sessionFactoryMap.put(Optional.of(FACTORY2_ROUTE_KEY), factory2);
-
-        new DAORouter(ImmutableMap.copyOf(sessionFactoryMap), null);
+        new DAORouter(null);
     }
 
     /**
@@ -86,7 +71,7 @@ public class AbstractHibernateDAORouterTest {
      */
     @Test(expected = IllegalStateException.class)
     public void emptySessionFactoryMap() {
-        new DAORouter(ImmutableMap.<Optional<String>, SessionFactory> of(), FACTORY1_ROUTE_KEY);
+        new DAORouter(ImmutableMap.<String, SessionFactory> of());
     }
 
     /**
@@ -94,10 +79,10 @@ public class AbstractHibernateDAORouterTest {
      */
     @Test(expected = NullPointerException.class)
     public void nullValueSessionFactoryMap() {
-        final Map<Optional<String>, SessionFactory> sessionFactoryMap = new LinkedHashMap<>();
-        sessionFactoryMap.put(Optional.of(FACTORY1_ROUTE_KEY), null);
+        final Map<String, SessionFactory> sessionFactoryMap = new LinkedHashMap<>();
+        sessionFactoryMap.put(FACTORY1_ROUTE_KEY, null);
 
-        new DAORouter(ImmutableMap.copyOf(sessionFactoryMap), FACTORY1_ROUTE_KEY);
+        new DAORouter(ImmutableMap.copyOf(sessionFactoryMap));
     }
 
     /**
@@ -107,14 +92,6 @@ public class AbstractHibernateDAORouterTest {
     public void nullDAOClassGetDAO() {
         RouteStore.getInstance().setRoute(FACTORY1_ROUTE_KEY);
         daoRouter.getDAO(null);
-    }
-
-    /**
-     * An absent routeKey is supported in sessionFactoryMap.
-     */
-    @Test
-    public void absentRouteKeyIsSupported() {
-        assertNotNull(daoRouter.getDAO(TestDAO.class));
     }
 
     /**
@@ -137,8 +114,8 @@ class DAORouter extends AbstractHibernateDAORouter {
     /**
      * @param sessionFactoryMap
      */
-    public DAORouter(ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap, String defaultRouteName) {
-        super(sessionFactoryMap, defaultRouteName);
+    public DAORouter(ImmutableMap<String, SessionFactory> sessionFactoryMap) {
+        super(sessionFactoryMap);
     }
 
     /*

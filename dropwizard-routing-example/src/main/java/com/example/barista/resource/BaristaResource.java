@@ -32,6 +32,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.astonish.dropwizard.routing.db.RouteStore;
 import com.example.barista.core.Barista;
 import com.example.barista.core.Drink;
 import com.example.barista.core.Recipe;
@@ -57,7 +58,7 @@ public class BaristaResource {
     public BaristaResource(BaristaDaoRouter daoRouter) {
         this.daoRouter = daoRouter;
         this.recipeResource = new RecipeResource(daoRouter);
-        this.storeResource = new StoreResource(daoRouter);
+        this.storeResource = new StoreResource();
     }
 
     /**
@@ -83,7 +84,8 @@ public class BaristaResource {
     public Barista baristaByName(@PathParam("name") String name) {
         final Optional<Barista> barista = daoRouter.getBaristaDAO().baristaByName(name);
         if (!barista.isPresent()) {
-            throw new NotFoundException("No barista found with name[" + name + "] at[" + daoRouter.currentRoute() + "]");
+            throw new NotFoundException("No barista found with name[" + name + "] at["
+                    + RouteStore.getInstance().getRoute() + "]");
         }
 
         return barista.get();
@@ -191,7 +193,8 @@ public class BaristaResource {
      */
     private void checkNameUniqueness(String name) {
         if (!daoRouter.getBaristaDAO().isNameUnique(name)) {
-            throw new ConflictException("Barista[" + name + "] already exists at[" + daoRouter.currentRoute() + "]");
+            throw new ConflictException("Barista[" + name + "] already exists at["
+                    + RouteStore.getInstance().getRoute() + "]");
         }
     }
 }

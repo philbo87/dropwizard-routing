@@ -30,7 +30,6 @@ import java.util.Map;
 import com.astonish.dropwizard.routing.db.DataSourceRoute;
 import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -41,10 +40,9 @@ import org.hibernate.SessionFactory;
  */
 public abstract class RoutingHibernateBundle<T extends Configuration> implements ConfiguredBundle<T>,
         RoutingDatabaseConfiguration<T> {
-    private ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap;
+    private ImmutableMap<String, SessionFactory> sessionFactoryMap;
     private final ImmutableList<Class<?>> entities;
     private final RoutingSessionFactoryFactory sessionFactoryFactory;
-    private String defaultRouteName;
 
     /**
      * @param entity
@@ -83,15 +81,8 @@ public abstract class RoutingHibernateBundle<T extends Configuration> implements
     /**
      * @return the sessionFactoryMap
      */
-    public ImmutableMap<Optional<String>, SessionFactory> getSessionFactoryMap() {
+    public ImmutableMap<String, SessionFactory> getSessionFactoryMap() {
         return ImmutableMap.copyOf(sessionFactoryMap);
-    }
-
-    /**
-     * @return the defaultRouteName
-     */
-    public String getDefaultRouteName() {
-        return defaultRouteName;
     }
 
     /*
@@ -101,7 +92,7 @@ public abstract class RoutingHibernateBundle<T extends Configuration> implements
      */
     @Override
     public final void run(T configuration, Environment environment) throws Exception {
-        final Map<Optional<String>, SessionFactory> sessionFactories = new LinkedHashMap<>();
+        final Map<String, SessionFactory> sessionFactories = new LinkedHashMap<>();
         for (DataSourceRoute route : getDataSourceRoutes(configuration)) {
             final String routeKey = route.getRouteName();
             final DataSourceFactory dbConfig = route.getDatabase();
@@ -110,13 +101,7 @@ public abstract class RoutingHibernateBundle<T extends Configuration> implements
                     routeKey);
             environment.healthChecks().register(routeKey,
                     new SessionFactoryHealthCheck(sessionFactory, dbConfig.getValidationQuery()));
-
-            // the primary url will be the default route when no route key is provided
-            if (sessionFactories.isEmpty()) {
-                sessionFactories.put(Optional.<String> absent(), sessionFactory);
-                defaultRouteName = routeKey;
-            }
-            sessionFactories.put(Optional.of(routeKey), sessionFactory);
+            sessionFactories.put(routeKey, sessionFactory);
         }
 
         this.sessionFactoryMap = ImmutableMap.copyOf(sessionFactories);

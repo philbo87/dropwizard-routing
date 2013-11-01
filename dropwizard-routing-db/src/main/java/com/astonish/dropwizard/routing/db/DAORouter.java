@@ -20,7 +20,6 @@ package com.astonish.dropwizard.routing.db;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -28,8 +27,8 @@ import com.google.common.collect.ImmutableSet;
  * Responsible for holding all DAOs for all possible routes.
  */
 public class DAORouter {
-    protected ImmutableMap<Optional<String>, ImmutableMap<Class<?>, Object>> daosByRoute = ImmutableMap
-            .<Optional<String>, ImmutableMap<Class<?>, Object>> of();
+    protected ImmutableMap<String, ImmutableMap<Class<?>, Object>> daosByRoute = ImmutableMap
+            .<String, ImmutableMap<Class<?>, Object>> of();
     private String defaultRouteName;
 
     /**
@@ -57,8 +56,7 @@ public class DAORouter {
     public <T> T getDAO(final Class<T> daoClass) {
         checkNotNull(daoClass, "daoClass is required");
 
-        final ImmutableMap<Class<?>, Object> routeDAOs = daosByRoute.get(Optional.fromNullable(RouteStore.getInstance()
-                .getRoute()));
+        final ImmutableMap<Class<?>, Object> routeDAOs = daosByRoute.get(RouteStore.getInstance().getRoute());
         checkState(null != routeDAOs, "No route found for Route[" + RouteStore.getInstance().getRoute() + "]");
         checkState(null != routeDAOs.get(daoClass), "Unknown DAO[" + daoClass.getSimpleName() + "]");
 
@@ -69,15 +67,7 @@ public class DAORouter {
      * Get all routes for this {@link DAORouter}.
      * @return all routes
      */
-    public ImmutableSet<Optional<String>> allRoutes() {
+    public ImmutableSet<String> allRoutes() {
         return daosByRoute.keySet();
-    }
-
-    /**
-     * @return the default route name
-     */
-    public String currentRoute() {
-        final String currentRoute = RouteStore.getInstance().getRoute();
-        return null == currentRoute ? defaultRouteName : currentRoute;
     }
 }

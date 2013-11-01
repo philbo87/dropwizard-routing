@@ -23,7 +23,6 @@ import com.astonish.dropwizard.routing.hibernate.AbstractHibernateDAORouter;
 import com.example.barista.db.BaristaDAO;
 import com.example.barista.db.IngredientDAO;
 import com.example.barista.db.RecipeDAO;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -33,8 +32,8 @@ public class BaristaDaoRouter extends AbstractHibernateDAORouter {
     /**
      * @param sessionFactoryMap
      */
-    public BaristaDaoRouter(ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap, String defaultRouteName) {
-        super(sessionFactoryMap, defaultRouteName);
+    public BaristaDaoRouter(ImmutableMap<String, SessionFactory> sessionFactoryMap) {
+        super(sessionFactoryMap);
     }
 
     /*

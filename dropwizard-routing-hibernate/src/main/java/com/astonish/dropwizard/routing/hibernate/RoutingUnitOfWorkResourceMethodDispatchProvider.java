@@ -19,7 +19,6 @@ package com.astonish.dropwizard.routing.hibernate;
 
 import io.dropwizard.hibernate.UnitOfWork;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.model.AbstractResourceMethod;
 import com.sun.jersey.spi.container.ResourceMethodDispatchProvider;
@@ -31,7 +30,7 @@ import org.hibernate.SessionFactory;
  */
 public class RoutingUnitOfWorkResourceMethodDispatchProvider implements ResourceMethodDispatchProvider {
     private final ResourceMethodDispatchProvider provider;
-    private final ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap;
+    private final ImmutableMap<String, SessionFactory> sessionFactoryMap;
 
     /**
      * @param provider
@@ -40,7 +39,7 @@ public class RoutingUnitOfWorkResourceMethodDispatchProvider implements Resource
      *            the map of route key to session factory
      */
     public RoutingUnitOfWorkResourceMethodDispatchProvider(ResourceMethodDispatchProvider provider,
-            ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap) {
+            ImmutableMap<String, SessionFactory> sessionFactoryMap) {
         this.provider = provider;
         this.sessionFactoryMap = sessionFactoryMap;
     }

@@ -86,12 +86,11 @@ public class BaristaApplication extends Application<BaristaConfiguration> {
     public void run(BaristaConfiguration config, Environment environment) throws Exception {
         environment.jersey().getResourceConfig().getContainerRequestFilters().add(new RoutingRequestFilterHeaderImpl());
 
-        final BaristaDaoRouter daoRouter = new BaristaDaoRouter(hibernateBundle.getSessionFactoryMap(),
-                hibernateBundle.getDefaultRouteName());
+        final BaristaDaoRouter daoRouter = new BaristaDaoRouter(hibernateBundle.getSessionFactoryMap());
         environment.jersey().register(new BaristaResource(daoRouter));
         environment.jersey().register(new IngredientResource(daoRouter));
         environment.jersey().register(new RecipeResource(daoRouter));
-        environment.jersey().register(new StoreResource(daoRouter));
+        environment.jersey().register(new StoreResource());
     }
 
     public static void main(String[] args) throws Exception {

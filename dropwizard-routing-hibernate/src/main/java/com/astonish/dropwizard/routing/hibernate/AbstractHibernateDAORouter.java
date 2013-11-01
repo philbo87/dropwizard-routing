@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import org.hibernate.SessionFactory;
 
 import com.astonish.dropwizard.routing.db.DAORouter;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -36,29 +35,24 @@ import com.google.common.collect.ImmutableMap;
 public abstract class AbstractHibernateDAORouter extends DAORouter {
     /**
      * @param sessionFactoryMap
-     *            map of {@link Optional} route keys to their corresponding {@link SessionFactory}.
-     * @param defaultRouteName
-     *            the default route name
+     *            map of route keys to their corresponding {@link SessionFactory}.
      * @throws NullPointerException
      *             if sessionFactoryMap is null or any {@link Entry} in sessionFactoryMap has a null value with a
      *             non-null key
      * @throws IllegalStateException
      *             if sessionFactoryMap is empty
      */
-    public AbstractHibernateDAORouter(final ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap,
-            final String defaultRouteName) {
+    public AbstractHibernateDAORouter(final ImmutableMap<String, SessionFactory> sessionFactoryMap) {
         checkNotNull(sessionFactoryMap);
-        checkNotNull(defaultRouteName);
         checkState(!sessionFactoryMap.isEmpty());
 
-        final Map<Optional<String>, ImmutableMap<Class<?>, Object>> daosByRoute = new LinkedHashMap<>();
-        for (Entry<Optional<String>, SessionFactory> e : sessionFactoryMap.entrySet()) {
+        final Map<String, ImmutableMap<Class<?>, Object>> daosByRoute = new LinkedHashMap<>();
+        for (Entry<String, SessionFactory> e : sessionFactoryMap.entrySet()) {
             SessionFactory factory = checkNotNull(e.getValue());
             daosByRoute.put(e.getKey(), constructDAOs(factory));
         }
 
         this.daosByRoute = ImmutableMap.copyOf(daosByRoute);
-        setDefaultRouteName(defaultRouteName);
     }
 
     /**

@@ -20,7 +20,6 @@ package com.astonish.dropwizard.routing.hibernate;
 import io.dropwizard.hibernate.UnitOfWork;
 
 import com.astonish.dropwizard.routing.db.RouteStore;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.NotFoundException;
 import com.sun.jersey.api.core.HttpContext;
@@ -49,8 +48,7 @@ public class RoutingUnitOfWorkRequestDispatcherTest {
     private final RequestDispatcher underlying = mock(RequestDispatcher.class);
     private final SessionFactory sessionFactory = mock(SessionFactory.class);
     private final RoutingUnitOfWorkRequestDispatcher dispatcher = new RoutingUnitOfWorkRequestDispatcher(unitOfWork,
-            underlying, ImmutableMap.<Optional<String>, SessionFactory> builder()
-                    .put(Optional.<String> absent(), sessionFactory).build());
+            underlying, ImmutableMap.<String, SessionFactory> builder().put("factory", sessionFactory).build());
 
     private final Object resource = mock(Object.class);
     private final HttpContext context = mock(HttpContext.class);
@@ -77,6 +75,7 @@ public class RoutingUnitOfWorkRequestDispatcherTest {
 
         mockStatic(RouteStore.class);
         when(RouteStore.getInstance()).thenReturn(routeStore);
+        when(routeStore.getRoute()).thenReturn("factory");
     }
 
     @Test
@@ -240,9 +239,9 @@ public class RoutingUnitOfWorkRequestDispatcherTest {
     public void routable() {
         final SessionFactory shouldNotBeUsed = mock(SessionFactory.class);
 
-        final ImmutableMap.Builder<Optional<String>, SessionFactory> bldr = new ImmutableMap.Builder<>();
-        bldr.put(Optional.<String> absent(), shouldNotBeUsed);
-        bldr.put(Optional.of("route"), sessionFactory);
+        final ImmutableMap.Builder<String, SessionFactory> bldr = new ImmutableMap.Builder<>();
+        bldr.put("route", sessionFactory);
+        bldr.put("otherroute", shouldNotBeUsed);
         final RoutingUnitOfWorkRequestDispatcher routableRequestDispatcher = new RoutingUnitOfWorkRequestDispatcher(
                 unitOfWork, underlying, bldr.build());
 
@@ -259,11 +258,8 @@ public class RoutingUnitOfWorkRequestDispatcherTest {
 
     @Test(expected = NotFoundException.class)
     public void invalidRoute() {
-        final SessionFactory shouldNotBeUsed = mock(SessionFactory.class);
-
-        final ImmutableMap.Builder<Optional<String>, SessionFactory> bldr = new ImmutableMap.Builder<>();
-        bldr.put(Optional.<String> absent(), shouldNotBeUsed);
-        bldr.put(Optional.of("route"), sessionFactory);
+        final ImmutableMap.Builder<String, SessionFactory> bldr = new ImmutableMap.Builder<>();
+        bldr.put("route", sessionFactory);
         final RoutingUnitOfWorkRequestDispatcher routableRequestDispatcher = new RoutingUnitOfWorkRequestDispatcher(
                 unitOfWork, underlying, bldr.build());
 

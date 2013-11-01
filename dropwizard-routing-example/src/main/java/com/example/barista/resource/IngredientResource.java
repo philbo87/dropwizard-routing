@@ -31,6 +31,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.astonish.dropwizard.routing.db.RouteStore;
 import com.example.barista.core.Ingredient;
 import com.example.barista.db.routing.BaristaDaoRouter;
 import com.google.common.base.Optional;
@@ -75,8 +76,8 @@ public class IngredientResource {
     public Ingredient ingredientByName(@PathParam("name") String name) {
         final Optional<Ingredient> ingredient = daoRouter.getIngredientDAO().ingredientByName(name);
         if (!ingredient.isPresent()) {
-            throw new NotFoundException("No ingredient found with name[" + name + "] at[" + daoRouter.currentRoute()
-                    + "]");
+            throw new NotFoundException("No ingredient found with name[" + name + "] at["
+                    + RouteStore.getInstance().getRoute() + "]");
         }
 
         return ingredient.get();
@@ -139,7 +140,8 @@ public class IngredientResource {
      */
     void checkNameUniqueness(String name) {
         if (!daoRouter.getIngredientDAO().isNameUnique(name)) {
-            throw new ConflictException("Ingredient[" + name + "] already exists at[" + daoRouter.currentRoute() + "]");
+            throw new ConflictException("Ingredient[" + name + "] already exists at["
+                    + RouteStore.getInstance().getRoute() + "]");
         }
     }
 
@@ -152,7 +154,7 @@ public class IngredientResource {
     void checkExclusiveNameUniqueness(Ingredient ingredient) {
         if (!daoRouter.getIngredientDAO().isNameExclusivelyUnique(ingredient)) {
             throw new ConflictException("Ingredient[" + ingredient.getName() + "] already exists at["
-                    + daoRouter.currentRoute() + "]");
+                    + RouteStore.getInstance().getRoute() + "]");
         }
     }
 }

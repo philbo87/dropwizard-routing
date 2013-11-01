@@ -17,7 +17,6 @@
  */
 package com.astonish.dropwizard.routing.hibernate;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.spi.container.ResourceMethodDispatchAdapter;
 import com.sun.jersey.spi.container.ResourceMethodDispatchProvider;
@@ -30,21 +29,20 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 public class RoutingUnitOfWorkResourceMethodDispatchAdapter implements ResourceMethodDispatchAdapter {
-    private final ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap;
+    private final ImmutableMap<String, SessionFactory> sessionFactoryMap;
 
     /**
      * @param sessionFactoryMap
      *            the map of route key to {@link SessionFactory}
      */
-    public RoutingUnitOfWorkResourceMethodDispatchAdapter(
-            ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap) {
+    public RoutingUnitOfWorkResourceMethodDispatchAdapter(ImmutableMap<String, SessionFactory> sessionFactoryMap) {
         this.sessionFactoryMap = sessionFactoryMap;
     }
 
     /**
      * @return the sessionFactoryMap
      */
-    ImmutableMap<Optional<String>, SessionFactory> getSessionFactoryMap() {
+    ImmutableMap<String, SessionFactory> getSessionFactoryMap() {
         return sessionFactoryMap;
     }
 

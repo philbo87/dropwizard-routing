@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import io.dropwizard.hibernate.UnitOfWork;
 
 import com.astonish.dropwizard.routing.db.RouteStore;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.sun.jersey.api.NotFoundException;
 import com.sun.jersey.api.core.HttpContext;
@@ -37,7 +36,7 @@ import org.hibernate.context.internal.ManagedSessionContext;
 public class RoutingUnitOfWorkRequestDispatcher implements RequestDispatcher {
     private final UnitOfWork unitOfWork;
     private final RequestDispatcher dispatcher;
-    private final ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap;
+    private final ImmutableMap<String, SessionFactory> sessionFactoryMap;
 
     /**
      * @param unitOfWork
@@ -48,7 +47,7 @@ public class RoutingUnitOfWorkRequestDispatcher implements RequestDispatcher {
      *            the sessionFactoryMap
      */
     public RoutingUnitOfWorkRequestDispatcher(final UnitOfWork unitOfWork, final RequestDispatcher dispatcher,
-            final ImmutableMap<Optional<String>, SessionFactory> sessionFactoryMap) {
+            final ImmutableMap<String, SessionFactory> sessionFactoryMap) {
         this.unitOfWork = unitOfWork;
         this.dispatcher = dispatcher;
         this.sessionFactoryMap = checkNotNull(sessionFactoryMap);
@@ -71,7 +70,7 @@ public class RoutingUnitOfWorkRequestDispatcher implements RequestDispatcher {
     /**
      * @return the sessionFactoryMap
      */
-    ImmutableMap<Optional<String>, SessionFactory> getSessionFactoryMap() {
+    ImmutableMap<String, SessionFactory> getSessionFactoryMap() {
         return sessionFactoryMap;
     }
 
@@ -170,8 +169,7 @@ public class RoutingUnitOfWorkRequestDispatcher implements RequestDispatcher {
      *             if a {@link SessionFactory} can not be found for the given route key
      */
     private SessionFactory route() {
-        final SessionFactory factory = sessionFactoryMap
-                .get(Optional.fromNullable(RouteStore.getInstance().getRoute()));
+        final SessionFactory factory = sessionFactoryMap.get(RouteStore.getInstance().getRoute());
         if (null == factory) {
             throw new NotFoundException("No SessionFactory found for RouteKey[" + RouteStore.getInstance().getRoute()
                     + "]");

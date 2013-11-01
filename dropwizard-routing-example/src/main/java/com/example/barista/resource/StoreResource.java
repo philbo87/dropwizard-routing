@@ -22,8 +22,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.astonish.dropwizard.routing.db.RouteStore;
 import com.example.barista.core.Store;
-import com.example.barista.db.routing.BaristaDaoRouter;
 
 /**
  * RESTful store operations.
@@ -31,21 +31,11 @@ import com.example.barista.db.routing.BaristaDaoRouter;
 @Path("/store")
 @Produces(MediaType.APPLICATION_JSON)
 public class StoreResource {
-    private final BaristaDaoRouter daoRouter;
-
-    /**
-     * @param daoRouter
-     *            the dao router
-     */
-    public StoreResource(BaristaDaoRouter daoRouter) {
-        this.daoRouter = daoRouter;
-    }
-
     /**
      * @return the current store
      */
     @GET
     public Store currentStore() {
-        return new Store(daoRouter.currentRoute());
+        return new Store(RouteStore.getInstance().getRoute());
     }
 }

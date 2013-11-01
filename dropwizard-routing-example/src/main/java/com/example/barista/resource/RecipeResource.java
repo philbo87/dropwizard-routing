@@ -33,6 +33,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.astonish.dropwizard.routing.db.RouteStore;
 import com.example.barista.core.Ingredient;
 import com.example.barista.core.Recipe;
 import com.example.barista.db.routing.BaristaDaoRouter;
@@ -80,7 +81,8 @@ public class RecipeResource {
     public Recipe recipeByName(@PathParam("name") String name) {
         final Optional<Recipe> recipe = daoRouter.getRecipeDAO().recipeByName(name);
         if (!recipe.isPresent()) {
-            throw new NotFoundException("No recipe found with name[" + name + "] at[" + daoRouter.currentRoute() + "]");
+            throw new NotFoundException("No recipe found with name[" + name + "] at["
+                    + RouteStore.getInstance().getRoute() + "]");
         }
 
         return recipe.get();
@@ -145,7 +147,8 @@ public class RecipeResource {
      */
     private void checkNameUniqueness(String name) {
         if (!daoRouter.getRecipeDAO().isNameUnique(name)) {
-            throw new ConflictException("Recipe[" + name + "] already exists at[" + daoRouter.currentRoute() + "]");
+            throw new ConflictException("Recipe[" + name + "] already exists at[" + RouteStore.getInstance().getRoute()
+                    + "]");
         }
     }
 
