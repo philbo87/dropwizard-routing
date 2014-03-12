@@ -143,7 +143,7 @@ public class RoutingSessionFactoryFactory {
 
         final ServiceRegistry registry = new ServiceRegistryBuilder()
                 .addService(ConnectionProvider.class, connectionProvider).applySettings(properties)
-                .getBootstrapServiceRegistry();
+                .build();
 
         return configuration.buildSessionFactory(registry);
     }
