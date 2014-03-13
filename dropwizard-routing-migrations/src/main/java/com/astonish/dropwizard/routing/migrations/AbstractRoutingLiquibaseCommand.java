@@ -40,6 +40,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.joda.time.Duration;
+import org.joda.time.format.ISOPeriodFormat;
+
 /**
  * Provides routing support for liquibase migrations.
  */
@@ -68,6 +71,12 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
 
         // only issue liquibase command to one route
         subparser.addArgument("--route").dest("routeName").help("the database route name");
+
+        subparser.addArgument("--threads").type(Integer.class).setDefault(4).dest("threads")
+                .help("number of threads to use if running against all routes");
+
+        subparser.addArgument("--time-limit").setDefault("PT30M").dest("timeLimit")
+                .help("time limit in ISO8601 period format.");
     }
 
     /*
@@ -91,14 +100,17 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
             }
         } else {
             // run against all routes
-            final ExecutorService executor = Executors.newFixedThreadPool(4);
+            final ExecutorService executor = Executors.newFixedThreadPool((Integer) namespace.get("threads"));
 
             for (DataSourceRoute route : strategy.getDataSourceRoutes(configuration)) {
                 executor.submit(new ThreadableCommand<T>(this, route, namespace));
             }
 
             executor.shutdown();
-            executor.awaitTermination(8, TimeUnit.HOURS);
+
+            final Duration timeLimit = ISOPeriodFormat.standard().parsePeriod(namespace.getString("timeLimit"))
+                    .toStandardDuration();
+            executor.awaitTermination(timeLimit.getMillis(), TimeUnit.MILLISECONDS);
         }
     }
 
