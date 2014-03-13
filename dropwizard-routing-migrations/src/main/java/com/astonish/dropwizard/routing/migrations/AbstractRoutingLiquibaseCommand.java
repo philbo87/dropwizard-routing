@@ -36,6 +36,9 @@ import io.dropwizard.migrations.CloseableLiquibase;
 import io.dropwizard.setup.Bootstrap;
 
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Provides routing support for liquibase migrations.
@@ -88,9 +91,14 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
             }
         } else {
             // run against all routes
+            final ExecutorService executor = Executors.newFixedThreadPool(4);
+
             for (DataSourceRoute route : strategy.getDataSourceRoutes(configuration)) {
-                run(route, namespace, configuration);
+                executor.submit(new ThreadableCommand<T>(this, route, namespace));
             }
+
+            executor.shutdown();
+            executor.awaitTermination(8, TimeUnit.HOURS);
         }
     }
 
@@ -108,7 +116,7 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
         }
     }
 
-    private CloseableLiquibase openLiquibase(DataSourceFactory dataSourceFactory, Namespace namespace)
+    CloseableLiquibase openLiquibase(DataSourceFactory dataSourceFactory, Namespace namespace)
             throws ClassNotFoundException, SQLException, LiquibaseException {
         final ManagedDataSource dataSource = dataSourceFactory.build(new MetricRegistry(), "liquibase");
         final String migrationsFile = (String) namespace.get("migrations-file");
@@ -119,4 +127,37 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
     }
 
     protected abstract void run(Namespace namespace, Liquibase liquibase) throws Exception;
+}
+
+class ThreadableCommand<T extends Configuration> implements Runnable {
+    private final AbstractRoutingLiquibaseCommand<T> command;
+    private final DataSourceFactory factory;
+    private final Namespace namespace;
+
+    public ThreadableCommand(final AbstractRoutingLiquibaseCommand<T> command, final DataSourceRoute route,
+            final Namespace namespace) {
+        this.command = command;
+
+        final DataSourceFactory factory = route.getDatabase();
+        factory.setMaxSize(1);
+        factory.setMinSize(1);
+        factory.setInitialSize(1);
+
+        this.factory = factory;
+        this.namespace = namespace;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Runnable#run()
+     */
+    @Override
+    public void run() {
+        try (CloseableLiquibase liquibase = command.openLiquibase(factory, namespace)) {
+            command.run(namespace, liquibase);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
