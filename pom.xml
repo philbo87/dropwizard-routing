@@ -36,7 +36,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <dropwizard.version>0.7.0-rc2</dropwizard.version>
+        <dropwizard.version>0.7.0</dropwizard.version>
         <easytesting.version>2.0M10</easytesting.version>
         <powermock.version>1.4.12</powermock.version>
     </properties>
