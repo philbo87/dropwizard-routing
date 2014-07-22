@@ -72,7 +72,13 @@ public abstract class RoutingHibernateBundle<T extends Configuration> implements
      */
     @Override
     public final void initialize(Bootstrap<?> bootstrap) {
-        bootstrap.getObjectMapper().registerModule(new Hibernate4Module());
+        bootstrap.getObjectMapper().registerModule(getHibernate4Module());
+    }
+
+    protected Hibernate4Module getHibernate4Module() {
+        final Hibernate4Module module = new Hibernate4Module();
+        module.disable(Hibernate4Module.Feature.USE_TRANSIENT_ANNOTATION);
+        return module;
     }
 
     protected void configure(org.hibernate.cfg.Configuration configuration) {

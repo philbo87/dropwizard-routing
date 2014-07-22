@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.astonish</groupId>
         <artifactId>dropwizard-routing</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.7.1</version>
     </parent>
 
     <artifactId>dropwizard-routing-example</artifactId>
