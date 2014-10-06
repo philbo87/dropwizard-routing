@@ -36,8 +36,11 @@ import io.dropwizard.migrations.CloseableLiquibase;
 import io.dropwizard.setup.Bootstrap;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.Duration;
@@ -102,8 +105,9 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
             // run against all routes
             final ExecutorService executor = Executors.newFixedThreadPool((Integer) namespace.get("threads"));
 
+            final List<Future<?>> futures = new ArrayList<>();
             for (DataSourceRoute route : strategy.getDataSourceRoutes(configuration)) {
-                executor.submit(new ThreadableCommand<T>(this, route, namespace));
+                futures.add(executor.submit(new ThreadableCommand<T>(this, route, namespace)));
             }
 
             executor.shutdown();
@@ -111,6 +115,10 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
             final Duration timeLimit = ISOPeriodFormat.standard().parsePeriod(namespace.getString("timeLimit"))
                     .toStandardDuration();
             executor.awaitTermination(timeLimit.getMillis(), TimeUnit.MILLISECONDS);
+
+            for (final Future<?> future : futures) {
+                future.get();
+            }
         }
     }
 
