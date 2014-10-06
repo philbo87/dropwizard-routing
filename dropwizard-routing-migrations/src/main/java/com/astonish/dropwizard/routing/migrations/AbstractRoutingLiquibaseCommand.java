@@ -168,6 +168,9 @@ class ThreadableCommand<T extends Configuration> implements Runnable {
     public void run() {
         try (CloseableLiquibase liquibase = command.openLiquibase(factory, namespace)) {
             command.run(namespace, liquibase);
+        } catch (ValidationFailedException e) {
+            e.printDescriptiveError(System.err);
+            throw new RuntimeException(e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
