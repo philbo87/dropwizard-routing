@@ -122,8 +122,9 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
 
             final Duration timeLimit = ISOPeriodFormat.standard().parsePeriod(namespace.getString("timeLimit"))
                     .toStandardDuration();
-            LOGGER.warn("Executor service timeLimit set to: ", timeLimit.getMillis());
+            LOGGER.warn("Start executor.awaitTermination({})", timeLimit.getMillis());
             executor.awaitTermination(timeLimit.getMillis(), TimeUnit.MILLISECONDS);
+            LOGGER.warn("End executor.awaitTermination({})", timeLimit.getMillis());
 
             for (final Future<?> future : futures) {
                 LOGGER.warn("Start future.get() Timestamp: {}", System.currentTimeMillis());
@@ -191,7 +192,8 @@ class ThreadableCommand<T extends Configuration> implements Runnable {
      */
     @Override
     public void run() {
-        try (CloseableLiquibase liquibase = command.openLiquibase(factory, namespace)) {
+        try {
+            CloseableLiquibase liquibase = command.openLiquibase(factory, namespace);
             LOGGER.error("Start ThreadableCommand.run() Timestamp:{}", System.currentTimeMillis());
             command.run(namespace, liquibase);
             LOGGER.error("End ThreadableCommand.run() Timestamp:{}", System.currentTimeMillis());
@@ -201,6 +203,9 @@ class ThreadableCommand<T extends Configuration> implements Runnable {
             throw new RuntimeException(e);
         } catch (Exception e) {
             LOGGER.error("ThreadableCommand.run() Exception", e);
+            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            LOGGER.error("ThreadableCommand.run() Throwable", e);
             throw new RuntimeException(e);
         }
     }
