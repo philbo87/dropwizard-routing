@@ -94,7 +94,7 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
     protected void run(Bootstrap<T> bootstrap, Namespace namespace, T configuration) throws Exception {
         final String routeName = (String) namespace.get("routeName");
 
-        LOGGER.debug("routeName = {}", routeName);
+        LOGGER.warn("routeName = {}", routeName);
 
         // if route is specified then only run the liquibase command against that route
         if (null != routeName) {
@@ -102,32 +102,33 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
 
             for (DataSourceRoute route : routes) {
                 if (routeName.equals(route.getRouteName())) {
-                    LOGGER.debug("Running for route: {}", route.getRouteName());
+                    LOGGER.warn("Running for route: {}", route.getRouteName());
                     run(route, namespace, configuration);
                 }
             }
         } else {
-            LOGGER.debug("running for all routes");
+            LOGGER.warn("running for all routes");
             // run against all routes
             final ExecutorService executor = Executors.newFixedThreadPool((Integer) namespace.get("threads"));
 
             final List<Future<?>> futures = new ArrayList<>();
             for (DataSourceRoute route : strategy.getDataSourceRoutes(configuration)) {
-                LOGGER.debug("Add Future task for route: {}", route.getRouteName());
+                LOGGER.warn("Add Future task for route: {}", route.getRouteName());
                 futures.add(executor.submit(new ThreadableCommand<T>(this, route, namespace)));
             }
 
+            LOGGER.warn("Shutting down executor service");
             executor.shutdown();
 
             final Duration timeLimit = ISOPeriodFormat.standard().parsePeriod(namespace.getString("timeLimit"))
                     .toStandardDuration();
-            LOGGER.debug("Executor timeLimit set to: ", timeLimit.getMillis());
+            LOGGER.warn("Executor service timeLimit set to: ", timeLimit.getMillis());
             executor.awaitTermination(timeLimit.getMillis(), TimeUnit.MILLISECONDS);
 
             for (final Future<?> future : futures) {
-                LOGGER.debug("Start future.get() Timestamp: {}", System.currentTimeMillis());
+                LOGGER.warn("Start future.get() Timestamp: {}", System.currentTimeMillis());
                 future.get();
-                LOGGER.debug("End future.get() Timestamp: {}", System.currentTimeMillis());
+                LOGGER.warn("End future.get() Timestamp: {}", System.currentTimeMillis());
             }
         }
     }
@@ -139,9 +140,9 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
         dbConfig.setInitialSize(1);
 
         try (CloseableLiquibase liquibase = openLiquibase(dbConfig, namespace)) {
-            LOGGER.debug("Before running liquibase. Timestamp: {}", System.currentTimeMillis() );
+            LOGGER.warn("Before running liquibase. Timestamp: {}", System.currentTimeMillis());
             run(namespace, liquibase);
-            LOGGER.debug("After running liquibase. Timestamp: {}", System.currentTimeMillis() );
+            LOGGER.warn("After running liquibase. Timestamp: {}", System.currentTimeMillis() );
         } catch (ValidationFailedException e) {
             LOGGER.error("AbstractRoutingLiquibaseCommand.run() ValidationFailedException: ", e);
             e.printDescriptiveError(System.err);
@@ -157,7 +158,7 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
             return new CloseableLiquibase(dataSource);
         }
 
-        LOGGER.debug("Open Liquibase with migrations-file: {}", migrationsFile );
+        LOGGER.warn("Open Liquibase with migrations-file: {}", migrationsFile );
         return new CloseableLiquibase(dataSource, migrationsFile);
     }
 
