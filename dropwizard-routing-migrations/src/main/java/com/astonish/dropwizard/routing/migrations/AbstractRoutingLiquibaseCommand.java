@@ -17,17 +17,6 @@
  */
 package com.astonish.dropwizard.routing.migrations;
 
-import com.astonish.dropwizard.routing.db.DataSourceRoute;
-import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.ImmutableList;
-
-import liquibase.Liquibase;
-import liquibase.exception.LiquibaseException;
-import liquibase.exception.ValidationFailedException;
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-
 import io.dropwizard.Configuration;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.db.DataSourceFactory;
@@ -45,6 +34,18 @@ import java.util.concurrent.TimeUnit;
 
 import org.joda.time.Duration;
 import org.joda.time.format.ISOPeriodFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.astonish.dropwizard.routing.db.DataSourceRoute;
+import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.collect.ImmutableList;
+import liquibase.Liquibase;
+import liquibase.exception.LiquibaseException;
+import liquibase.exception.ValidationFailedException;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Provides routing support for liquibase migrations.
@@ -52,6 +53,7 @@ import org.joda.time.format.ISOPeriodFormat;
 public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> extends ConfiguredCommand<T> {
     private final RoutingDatabaseConfiguration<T> strategy;
     private final Class<T> configurationClass;
+    private static final Logger LOGGER = LoggerFactory.getLogger("liquibase");
 
     protected AbstractRoutingLiquibaseCommand(String name, String description,
             RoutingDatabaseConfiguration<T> strategy, Class<T> configurationClass) {
@@ -92,21 +94,26 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
     protected void run(Bootstrap<T> bootstrap, Namespace namespace, T configuration) throws Exception {
         final String routeName = (String) namespace.get("routeName");
 
+        LOGGER.debug("routeName = {}", routeName);
+
         // if route is specified then only run the liquibase command against that route
         if (null != routeName) {
             final ImmutableList<DataSourceRoute> routes = strategy.getDataSourceRoutes(configuration);
 
             for (DataSourceRoute route : routes) {
                 if (routeName.equals(route.getRouteName())) {
+                    LOGGER.debug("Running for route: {}", route.getRouteName());
                     run(route, namespace, configuration);
                 }
             }
         } else {
+            LOGGER.debug("running for all routes");
             // run against all routes
             final ExecutorService executor = Executors.newFixedThreadPool((Integer) namespace.get("threads"));
 
             final List<Future<?>> futures = new ArrayList<>();
             for (DataSourceRoute route : strategy.getDataSourceRoutes(configuration)) {
+                LOGGER.debug("Add Future task for route: {}", route.getRouteName());
                 futures.add(executor.submit(new ThreadableCommand<T>(this, route, namespace)));
             }
 
@@ -114,10 +121,13 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
 
             final Duration timeLimit = ISOPeriodFormat.standard().parsePeriod(namespace.getString("timeLimit"))
                     .toStandardDuration();
+            LOGGER.debug("Executor timeLimit set to: ", timeLimit.getMillis());
             executor.awaitTermination(timeLimit.getMillis(), TimeUnit.MILLISECONDS);
 
             for (final Future<?> future : futures) {
+                LOGGER.debug("Start future.get() Timestamp: {}", System.currentTimeMillis());
                 future.get();
+                LOGGER.debug("End future.get() Timestamp: {}", System.currentTimeMillis());
             }
         }
     }
@@ -129,8 +139,11 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
         dbConfig.setInitialSize(1);
 
         try (CloseableLiquibase liquibase = openLiquibase(dbConfig, namespace)) {
+            LOGGER.debug("Before running liquibase. Timestamp: {}", System.currentTimeMillis() );
             run(namespace, liquibase);
+            LOGGER.debug("After running liquibase. Timestamp: {}", System.currentTimeMillis() );
         } catch (ValidationFailedException e) {
+            LOGGER.error("AbstractRoutingLiquibaseCommand.run() ValidationFailedException: ", e);
             e.printDescriptiveError(System.err);
             throw e;
         }
@@ -143,6 +156,8 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
         if (migrationsFile == null) {
             return new CloseableLiquibase(dataSource);
         }
+
+        LOGGER.debug("Open Liquibase with migrations-file: {}", migrationsFile );
         return new CloseableLiquibase(dataSource, migrationsFile);
     }
 
@@ -153,6 +168,7 @@ class ThreadableCommand<T extends Configuration> implements Runnable {
     private final AbstractRoutingLiquibaseCommand<T> command;
     private final DataSourceFactory factory;
     private final Namespace namespace;
+    private static final Logger LOGGER = LoggerFactory.getLogger("liquibase");
 
     public ThreadableCommand(final AbstractRoutingLiquibaseCommand<T> command, final DataSourceRoute route,
             final Namespace namespace) {
@@ -175,11 +191,15 @@ class ThreadableCommand<T extends Configuration> implements Runnable {
     @Override
     public void run() {
         try (CloseableLiquibase liquibase = command.openLiquibase(factory, namespace)) {
+            LOGGER.error("Start ThreadableCommand.run() Timestamp:{}", System.currentTimeMillis());
             command.run(namespace, liquibase);
+            LOGGER.error("End ThreadableCommand.run() Timestamp:{}", System.currentTimeMillis());
         } catch (ValidationFailedException e) {
+            LOGGER.error("ThreadableCommand.run() ValidationFailedException", e);
             e.printDescriptiveError(System.err);
             throw new RuntimeException(e);
         } catch (Exception e) {
+            LOGGER.error("ThreadableCommand.run() Exception", e);
             throw new RuntimeException(e);
         }
     }
