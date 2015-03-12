@@ -192,8 +192,9 @@ class ThreadableCommand<T extends Configuration> implements Runnable {
      */
     @Override
     public void run() {
+        CloseableLiquibase liquibase = null;
         try {
-            CloseableLiquibase liquibase = command.openLiquibase(factory, namespace);
+            liquibase = command.openLiquibase(factory, namespace);
             LOGGER.error("Start ThreadableCommand.run() Timestamp:{}", System.currentTimeMillis());
             command.run(namespace, liquibase);
             LOGGER.error("End ThreadableCommand.run() Timestamp:{}", System.currentTimeMillis());
@@ -207,6 +208,14 @@ class ThreadableCommand<T extends Configuration> implements Runnable {
         } catch (Throwable e) {
             LOGGER.error("ThreadableCommand.run() Throwable", e);
             throw new RuntimeException(e);
+        } finally {
+            if(liquibase != null) {
+                try {
+                    liquibase.close();
+                } catch (Exception e) {
+                    LOGGER.error("Exception when calling liquibase.close()", e);
+                }
+            }
         }
     }
 }
