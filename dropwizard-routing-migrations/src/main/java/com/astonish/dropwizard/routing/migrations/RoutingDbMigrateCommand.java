@@ -17,6 +17,14 @@
  */
 package com.astonish.dropwizard.routing.migrations;
 
+import io.dropwizard.Configuration;
+
+import java.io.OutputStreamWriter;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.astonish.dropwizard.routing.db.RoutingDatabaseConfiguration;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -25,12 +33,9 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
-import io.dropwizard.Configuration;
-
-import java.io.OutputStreamWriter;
-import java.util.List;
-
 public class RoutingDbMigrateCommand<T extends Configuration> extends AbstractRoutingLiquibaseCommand<T> {
+    private static final Logger LOGGER = LoggerFactory.getLogger("RoutingDbMigrateCommand");
+
     public RoutingDbMigrateCommand(RoutingDatabaseConfiguration<T> strategy, Class<T> configurationClass) {
         super("migrate", "Apply all pending change sets.", strategy, configurationClass);
     }
@@ -51,22 +56,34 @@ public class RoutingDbMigrateCommand<T extends Configuration> extends AbstractRo
 
     @Override
     public void run(Namespace namespace, Liquibase liquibase) throws Exception {
-        final String context = getContext(namespace);
-        final Integer count = namespace.getInt("count");
-        final Boolean dryRun = namespace.getBoolean("dry-run");
-        if (count != null) {
-            if (dryRun) {
-                liquibase.update(count, context, new OutputStreamWriter(System.out, Charsets.UTF_8));
+        try {
+            final String context = getContext(namespace);
+            LOGGER.error("context: {}", context);
+            final Integer count = namespace.getInt("count");
+            LOGGER.error("count: {}", count);
+            final Boolean dryRun = namespace.getBoolean("dry-run");
+            LOGGER.error("dryRun: {}", dryRun);
+            if (count != null) {
+                if (dryRun) {
+                    liquibase.update(count, context, new OutputStreamWriter(System.out, Charsets.UTF_8));
+                } else {
+                    liquibase.update(count, context);
+                }
             } else {
-                liquibase.update(count, context);
+                if (dryRun) {
+                    liquibase.update(context, new OutputStreamWriter(System.out, Charsets.UTF_8));
+                } else {
+                    liquibase.update(context);
+                }
             }
-        } else {
-            if (dryRun) {
-                liquibase.update(context, new OutputStreamWriter(System.out, Charsets.UTF_8));
-            } else {
-                liquibase.update(context);
-            }
+        } catch (Exception e) {
+            LOGGER.error("Exception in RoutingDbMigrateCommand.run() - " + e.getMessage(), e);
+            throw e;
+        } catch (Throwable t) {
+            LOGGER.error("Throwable in RoutingDbMigrateCommand.run() - " + t.getMessage(), t);
+            throw t;
         }
+
     }
 
     private String getContext(Namespace namespace) {
