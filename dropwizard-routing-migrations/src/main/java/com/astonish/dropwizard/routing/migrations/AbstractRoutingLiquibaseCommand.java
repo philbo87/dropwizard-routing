@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.Duration;
@@ -113,8 +114,17 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
 
             final List<Future<?>> futures = new ArrayList<>();
             for (DataSourceRoute route : strategy.getDataSourceRoutes(configuration)) {
-                LOGGER.warn("Add Future task for route: {}", route.getRouteName());
-                futures.add(executor.submit(new ThreadableCommand<T>(this, route, namespace)));
+                try{
+                    LOGGER.warn("Add Future task for route: {}", route.getRouteName());
+                    Runnable runnable = new ThreadableCommand<T>(this, route, namespace);
+                    Future<?> future = executor.submit(runnable);
+                    futures.add(future);
+                } catch (RejectedExecutionException e) {
+                    LOGGER.error("RejectedExecutionException while submitting runnable to executor", e);
+                } catch (Exception e) {
+                    LOGGER.error("Who the F*$# knows what happened here...", e);
+                    throw e;
+                }
             }
 
             LOGGER.warn("Shutting down executor service");
@@ -122,13 +132,25 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
 
             final Duration timeLimit = ISOPeriodFormat.standard().parsePeriod(namespace.getString("timeLimit"))
                     .toStandardDuration();
-            LOGGER.warn("Start executor.awaitTermination({})", timeLimit.getMillis());
-            executor.awaitTermination(timeLimit.getMillis(), TimeUnit.MILLISECONDS);
-            LOGGER.warn("End executor.awaitTermination({})", timeLimit.getMillis());
+
+            try {
+                LOGGER.warn("Start executor.awaitTermination({})", timeLimit.getMillis());
+                executor.awaitTermination(timeLimit.getMillis(), TimeUnit.MILLISECONDS);
+                LOGGER.warn("End executor.awaitTermination({})", timeLimit.getMillis());
+            } catch (Throwable t) {
+                LOGGER.error("Catching ANYTHING in executor.awaitTermination and rethrowing it!", t);
+                throw t;
+            }
+
 
             for (final Future<?> future : futures) {
                 LOGGER.warn("Start future.get() Timestamp: {}", System.currentTimeMillis());
-                future.get();
+                try {
+                    future.get();
+                } catch (Throwable t) {
+                    LOGGER.error("Catching ANYTHING in future.get() and rethrowing it!", t);
+                    throw t;
+                }
                 LOGGER.warn("End future.get() Timestamp: {}", System.currentTimeMillis());
             }
         }
@@ -140,7 +162,9 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
         dbConfig.setMinSize(1);
         dbConfig.setInitialSize(1);
 
-        try (CloseableLiquibase liquibase = openLiquibase(dbConfig, namespace)) {
+        CloseableLiquibase liquibase = null;
+        try {
+            liquibase = openLiquibase(dbConfig, namespace);
             LOGGER.warn("Before running liquibase. Timestamp: {}", System.currentTimeMillis());
             run(namespace, liquibase);
             LOGGER.warn("After running liquibase. Timestamp: {}", System.currentTimeMillis() );
@@ -148,6 +172,14 @@ public abstract class AbstractRoutingLiquibaseCommand<T extends Configuration> e
             LOGGER.error("AbstractRoutingLiquibaseCommand.run() ValidationFailedException: ", e);
             e.printDescriptiveError(System.err);
             throw e;
+        } finally {
+            if(liquibase != null) {
+                try {
+                    liquibase.close();
+                } catch (Exception e) {
+                    LOGGER.error("Exception when calling liquibase.close()", e);
+                }
+            }
         }
     }
 
@@ -170,10 +202,11 @@ class ThreadableCommand<T extends Configuration> implements Runnable {
     private final AbstractRoutingLiquibaseCommand<T> command;
     private final DataSourceFactory factory;
     private final Namespace namespace;
-    private static final Logger LOGGER = LoggerFactory.getLogger("liquibase");
+    private static final Logger LOGGER = LoggerFactory.getLogger("liquibase.ThreadableCommand");
 
     public ThreadableCommand(final AbstractRoutingLiquibaseCommand<T> command, final DataSourceRoute route,
             final Namespace namespace) {
+        LOGGER.error("Inside ThreadableCommand constructor - Timestamp:{}", System.currentTimeMillis());
         this.command = command;
 
         final DataSourceFactory factory = route.getDatabase();
