@@ -23,6 +23,7 @@ import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.SessionFactoryHealthCheck;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -105,12 +106,15 @@ public abstract class RoutingHibernateBundle<T extends Configuration> implements
 
             final SessionFactory sessionFactory = sessionFactoryFactory.build(this, environment, dbConfig, entities,
                     routeKey);
-            environment.healthChecks().register(routeKey,
-                    new SessionFactoryHealthCheck(sessionFactory, dbConfig.getValidationQuery()));
+            environment.healthChecks().register(
+                    routeKey,
+                    new SessionFactoryHealthCheck(environment.getHealthCheckExecutorService(), dbConfig
+                            .getValidationQueryTimeout().or(Duration.seconds(5)), sessionFactory, dbConfig
+                            .getValidationQuery()));
             sessionFactories.put(routeKey, sessionFactory);
         }
 
         this.sessionFactoryMap = ImmutableMap.copyOf(sessionFactories);
-        environment.jersey().register(new RoutingUnitOfWorkResourceMethodDispatchAdapter(this.sessionFactoryMap));
+        environment.jersey().register(new RoutingUnitOfWorkApplicationListener(this.sessionFactoryMap));
     }
 }

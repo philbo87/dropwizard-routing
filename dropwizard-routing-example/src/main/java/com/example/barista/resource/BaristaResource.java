@@ -25,12 +25,15 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import com.astonish.dropwizard.routing.db.RouteStore;
 import com.example.barista.core.Barista;
@@ -38,8 +41,6 @@ import com.example.barista.core.Drink;
 import com.example.barista.core.Recipe;
 import com.example.barista.db.routing.BaristaDaoRouter;
 import com.google.common.base.Optional;
-import com.sun.jersey.api.ConflictException;
-import com.sun.jersey.api.NotFoundException;
 
 /**
  * RESTful barista operations.
@@ -101,7 +102,7 @@ public class BaristaResource {
     @UnitOfWork
     public Barista createBarista(@Valid Barista barista) {
         if (0 < barista.getId()) {
-            throw new ConflictException("Use PUT[/barista] to update an existing barista.");
+            throw new WebApplicationException("Use PUT[/barista] to update an existing barista.", Status.CONFLICT);
         }
 
         checkNameUniqueness(barista.getName());
@@ -120,7 +121,7 @@ public class BaristaResource {
     @UnitOfWork
     public Barista updateBarista(@Valid Barista barista) {
         if (1 > barista.getId()) {
-            throw new ConflictException("Use POST[/barista] to create a new barista.");
+            throw new WebApplicationException("Use POST[/barista] to create a new barista.", Status.CONFLICT);
         }
 
         checkNameUniqueness(barista.getName());
@@ -193,8 +194,8 @@ public class BaristaResource {
      */
     private void checkNameUniqueness(String name) {
         if (!daoRouter.getBaristaDAO().isNameUnique(name)) {
-            throw new ConflictException("Barista[" + name + "] already exists at["
-                    + RouteStore.getInstance().getRoute() + "]");
+            throw new WebApplicationException("Barista[" + name + "] already exists at["
+                    + RouteStore.getInstance().getRoute() + "]", Status.CONFLICT);
         }
     }
 }

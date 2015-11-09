@@ -24,19 +24,20 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import com.astonish.dropwizard.routing.db.RouteStore;
 import com.example.barista.core.Ingredient;
 import com.example.barista.db.routing.BaristaDaoRouter;
 import com.google.common.base.Optional;
-import com.sun.jersey.api.ConflictException;
-import com.sun.jersey.api.NotFoundException;
 
 /**
  * RESTful ingredient operations.
@@ -93,7 +94,7 @@ public class IngredientResource {
     @UnitOfWork
     public Ingredient createIngredient(@Valid Ingredient ingredient) {
         if (0 < ingredient.getId()) {
-            throw new ConflictException("Use PUT[/ingredient] to update an existing ingredient.");
+            throw new WebApplicationException("Use PUT[/ingredient] to update an existing ingredient.", Status.CONFLICT);
         }
 
         checkNameUniqueness(ingredient.getName());
@@ -112,7 +113,7 @@ public class IngredientResource {
     @UnitOfWork
     public Ingredient updateIngredient(@Valid Ingredient ingredient) {
         if (1 > ingredient.getId()) {
-            throw new ConflictException("Use POST[/ingredient] to create a new barista.");
+            throw new WebApplicationException("Use POST[/ingredient] to create a new barista.", Status.CONFLICT);
         }
 
         checkNameUniqueness(ingredient.getName());
@@ -140,8 +141,8 @@ public class IngredientResource {
      */
     void checkNameUniqueness(String name) {
         if (!daoRouter.getIngredientDAO().isNameUnique(name)) {
-            throw new ConflictException("Ingredient[" + name + "] already exists at["
-                    + RouteStore.getInstance().getRoute() + "]");
+            throw new WebApplicationException("Ingredient[" + name + "] already exists at["
+                    + RouteStore.getInstance().getRoute() + "]", Status.CONFLICT);
         }
     }
 
@@ -153,8 +154,8 @@ public class IngredientResource {
      */
     void checkExclusiveNameUniqueness(Ingredient ingredient) {
         if (!daoRouter.getIngredientDAO().isNameExclusivelyUnique(ingredient)) {
-            throw new ConflictException("Ingredient[" + ingredient.getName() + "] already exists at["
-                    + RouteStore.getInstance().getRoute() + "]");
+            throw new WebApplicationException("Ingredient[" + ingredient.getName() + "] already exists at["
+                    + RouteStore.getInstance().getRoute() + "]", Status.CONFLICT);
         }
     }
 }

@@ -18,7 +18,6 @@
 package com.example.barista.resource;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-
 import io.dropwizard.hibernate.UnitOfWork;
 
 import java.util.List;
@@ -26,20 +25,21 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import com.astonish.dropwizard.routing.db.RouteStore;
 import com.example.barista.core.Ingredient;
 import com.example.barista.core.Recipe;
 import com.example.barista.db.routing.BaristaDaoRouter;
 import com.google.common.base.Optional;
-import com.sun.jersey.api.ConflictException;
-import com.sun.jersey.api.NotFoundException;
 
 /**
  * RESTful recipe operations.
@@ -98,7 +98,7 @@ public class RecipeResource {
     @UnitOfWork
     public Recipe createRecipe(@Valid Recipe recipe) {
         if (0 < recipe.getId()) {
-            throw new ConflictException("Use PUT[/recipe] to update an existing recipe.");
+            throw new WebApplicationException("Use PUT[/recipe] to update an existing recipe.", Status.CONFLICT);
         }
 
         checkNameUniqueness(recipe.getName());
@@ -118,7 +118,7 @@ public class RecipeResource {
     @UnitOfWork
     public Recipe updateRecipe(@Valid Recipe recipe) {
         if (1 > recipe.getId()) {
-            throw new ConflictException("Use POST[/recipe] to create a new barista.");
+            throw new WebApplicationException("Use POST[/recipe] to create a new barista.", Status.CONFLICT);
         }
 
         checkNameUniqueness(recipe.getName());
@@ -147,8 +147,8 @@ public class RecipeResource {
      */
     private void checkNameUniqueness(String name) {
         if (!daoRouter.getRecipeDAO().isNameUnique(name)) {
-            throw new ConflictException("Recipe[" + name + "] already exists at[" + RouteStore.getInstance().getRoute()
-                    + "]");
+            throw new WebApplicationException("Recipe[" + name + "] already exists at["
+                    + RouteStore.getInstance().getRoute() + "]", Status.CONFLICT);
         }
     }
 

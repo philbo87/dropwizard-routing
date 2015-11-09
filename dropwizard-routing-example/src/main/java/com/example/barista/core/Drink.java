@@ -20,6 +20,7 @@ package com.example.barista.core;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
@@ -115,7 +116,7 @@ public class Drink {
     @Override
     public String toString() {
 //@formatter:off
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("barista", this.barista)
                 .add("brewDate", this.brewDate)
                 .add("name", this.name)

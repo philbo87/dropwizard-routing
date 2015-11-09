@@ -17,6 +17,7 @@
  */
 package com.example.barista.core;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
@@ -73,7 +74,7 @@ public class Store {
     @Override
     public String toString() {
 //@formatter:off
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("name", this.name)
                 .toString();
 //@formatter:on

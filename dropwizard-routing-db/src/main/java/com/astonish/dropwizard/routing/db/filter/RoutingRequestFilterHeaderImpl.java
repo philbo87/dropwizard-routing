@@ -17,28 +17,28 @@
  */
 package com.astonish.dropwizard.routing.db.filter;
 
+import java.io.IOException;
+
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.Provider;
 
 import com.astonish.dropwizard.routing.db.RouteStore;
-import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerRequestFilter;
 
 /**
  * Checks all requests for a RouteKey header and stores the route in the {@link RouteStore}.
  */
+@Provider
 public class RoutingRequestFilterHeaderImpl implements ContainerRequestFilter {
     public static final String HEADER_NAME = "RouteKey";
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.sun.jersey.spi.container.ContainerRequestFilter#filter(com.sun.jersey.spi.container.ContainerRequest)
+    /* (non-Javadoc)
+     * @see javax.ws.rs.container.ContainerRequestFilter#filter(javax.ws.rs.container.ContainerRequestContext)
      */
     @Override
-    public ContainerRequest filter(ContainerRequest request) {
-        final MultivaluedMap<String, String> headerMap = request.getRequestHeaders();
+    public void filter(ContainerRequestContext ctxt) throws IOException {
+        final MultivaluedMap<String, String> headerMap = ctxt.getHeaders();
         RouteStore.getInstance().setRoute(headerMap.getFirst(HEADER_NAME));
-
-        return request;
     }
 }

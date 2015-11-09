@@ -1,0 +1,328 @@
+/* Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package com.astonish.dropwizard.routing.hibernate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import io.dropwizard.hibernate.UnitOfWork;
+
+import java.lang.reflect.Method;
+
+import org.glassfish.jersey.server.ExtendedUriInfo;
+import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.model.ResourceModel;
+import org.glassfish.jersey.server.monitoring.ApplicationEvent;
+import org.glassfish.jersey.server.monitoring.RequestEvent;
+import org.glassfish.jersey.server.monitoring.RequestEventListener;
+import org.hibernate.CacheMode;
+import org.hibernate.FlushMode;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.context.internal.ManagedSessionContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import com.google.common.collect.ImmutableMap;
+
+public class RoutingUnitOfWorkApplicationListenerTest {
+    private final SessionFactory sessionFactory = mock(SessionFactory.class);
+    private final RoutingUnitOfWorkApplicationListener listener = new RoutingUnitOfWorkApplicationListener(ImmutableMap
+            .<String, SessionFactory> builder().put("factory1routekey", sessionFactory).build());
+    private final ApplicationEvent appEvent = mock(ApplicationEvent.class);
+    private final ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
+
+    private final RequestEvent requestStartEvent = mock(RequestEvent.class);
+    private final RequestEvent requestMethodStartEvent = mock(RequestEvent.class);
+    private final RequestEvent responseFiltersStartEvent = mock(RequestEvent.class);
+    private final RequestEvent requestMethodExceptionEvent = mock(RequestEvent.class);
+    private final Session session = mock(Session.class);
+    private final Transaction transaction = mock(Transaction.class);
+
+    @Before
+    public void setUp() throws Exception {
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.getSessionFactory()).thenReturn(sessionFactory);
+        when(session.beginTransaction()).thenReturn(transaction);
+        when(session.getTransaction()).thenReturn(transaction);
+
+        when(transaction.isActive()).thenReturn(true);
+
+        when(appEvent.getType()).thenReturn(ApplicationEvent.Type.INITIALIZATION_APP_FINISHED);
+        when(requestMethodStartEvent.getType()).thenReturn(RequestEvent.Type.RESOURCE_METHOD_START);
+        when(responseFiltersStartEvent.getType()).thenReturn(RequestEvent.Type.RESP_FILTERS_START);
+        when(requestMethodExceptionEvent.getType()).thenReturn(RequestEvent.Type.ON_EXCEPTION);
+        when(requestMethodStartEvent.getUriInfo()).thenReturn(uriInfo);
+        when(responseFiltersStartEvent.getUriInfo()).thenReturn(uriInfo);
+        when(requestMethodExceptionEvent.getUriInfo()).thenReturn(uriInfo);
+
+        prepareAppEvent("methodWithDefaultAnnotation");
+    }
+
+    @Test
+    public void opensAndClosesASession() throws Exception {
+        execute();
+
+        final InOrder inOrder = inOrder(sessionFactory, session);
+        inOrder.verify(sessionFactory).openSession();
+        inOrder.verify(session).close();
+    }
+
+    @Test
+    public void bindsAndUnbindsTheSessionToTheManagedContext() throws Exception {
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                assertThat(ManagedSessionContext.hasBind(sessionFactory)).isTrue();
+                return null;
+            }
+        }).when(session).beginTransaction();
+
+        execute();
+
+        assertThat(ManagedSessionContext.hasBind(sessionFactory)).isFalse();
+    }
+
+    @Test
+    public void configuresTheSessionsReadOnlyDefault() throws Exception {
+        prepareAppEvent("methodWithReadOnlyAnnotation");
+
+        execute();
+
+        verify(session).setDefaultReadOnly(true);
+    }
+
+    @Test
+    public void configuresTheSessionsCacheMode() throws Exception {
+        prepareAppEvent("methodWithCacheModeIgnoreAnnotation");
+
+        execute();
+
+        verify(session).setCacheMode(CacheMode.IGNORE);
+    }
+
+    @Test
+    public void configuresTheSessionsFlushMode() throws Exception {
+        prepareAppEvent("methodWithFlushModeAlwaysAnnotation");
+
+        execute();
+
+        verify(session).setFlushMode(FlushMode.ALWAYS);
+    }
+
+    @Test
+    public void doesNotBeginATransactionIfNotTransactional() throws Exception {
+        final String resourceMethodName = "methodWithTransactionalFalseAnnotation";
+        prepareAppEvent(resourceMethodName);
+
+        when(session.getTransaction()).thenReturn(null);
+
+        execute();
+
+        verify(session, never()).beginTransaction();
+        verifyZeroInteractions(transaction);
+    }
+
+    @Test
+    public void detectsAnnotationOnHandlingMethod() throws NoSuchMethodException {
+        final String resourceMethodName = "handlingMethodAnnotated";
+        prepareAppEvent(resourceMethodName);
+
+        execute();
+
+        verify(session).setDefaultReadOnly(true);
+    }
+
+    @Test
+    public void detectsAnnotationOnDefinitionMethod() throws NoSuchMethodException {
+        final String resourceMethodName = "definitionMethodAnnotated";
+        prepareAppEvent(resourceMethodName);
+
+        execute();
+
+        verify(session).setDefaultReadOnly(true);
+    }
+
+    @Test
+    public void annotationOnDefinitionMethodOverridesHandlingMethod() throws NoSuchMethodException {
+        final String resourceMethodName = "bothMethodsAnnotated";
+        prepareAppEvent(resourceMethodName);
+
+        execute();
+
+        verify(session).setDefaultReadOnly(true);
+    }
+
+    @Test
+    public void beginsAndCommitsATransactionIfTransactional() throws Exception {
+        execute();
+
+        final InOrder inOrder = inOrder(session, transaction);
+        inOrder.verify(session).beginTransaction();
+        inOrder.verify(transaction).commit();
+        inOrder.verify(session).close();
+    }
+
+    @Test
+    public void rollsBackTheTransactionOnException() throws Exception {
+        executeWithException();
+
+        final InOrder inOrder = inOrder(session, transaction);
+        inOrder.verify(session).beginTransaction();
+        inOrder.verify(transaction).rollback();
+        inOrder.verify(session).close();
+    }
+
+    @Test
+    public void doesNotCommitAnInactiveTransaction() throws Exception {
+        when(transaction.isActive()).thenReturn(false);
+
+        execute();
+
+        verify(transaction, never()).commit();
+    }
+
+    @Test
+    public void doesNotCommitANullTransaction() throws Exception {
+        when(session.getTransaction()).thenReturn(null);
+
+        execute();
+
+        verify(transaction, never()).commit();
+    }
+
+    @Test
+    public void doesNotRollbackAnInactiveTransaction() throws Exception {
+        when(transaction.isActive()).thenReturn(false);
+
+        executeWithException();
+
+        verify(transaction, never()).rollback();
+    }
+
+    @Test
+    public void doesNotRollbackANullTransaction() throws Exception {
+        when(session.getTransaction()).thenReturn(null);
+
+        executeWithException();
+
+        verify(transaction, never()).rollback();
+    }
+
+    private void prepareAppEvent(String resourceMethodName) throws NoSuchMethodException {
+        final Resource.Builder builder = Resource.builder();
+        final MockResource mockResource = new MockResource();
+        final Method handlingMethod = mockResource.getClass().getMethod(resourceMethodName);
+
+        Method definitionMethod = handlingMethod;
+        Class<?> interfaceClass = mockResource.getClass().getInterfaces()[0];
+        if (methodDefinedOnInterface(resourceMethodName, interfaceClass.getMethods())) {
+            definitionMethod = interfaceClass.getMethod(resourceMethodName);
+        }
+
+        final ResourceMethod resourceMethod = builder.addMethod().handlingMethod(handlingMethod)
+                .handledBy(mockResource, definitionMethod).build();
+        final Resource resource = builder.build();
+        final ResourceModel model = new ResourceModel.Builder(false).addResource(resource).build();
+
+        when(appEvent.getResourceModel()).thenReturn(model);
+        when(uriInfo.getMatchedResourceMethod()).thenReturn(resourceMethod);
+    }
+
+    private boolean methodDefinedOnInterface(String methodName, Method[] methods) {
+        for (Method method : methods) {
+            if (method.getName().equals(methodName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void execute() {
+        listener.onEvent(appEvent);
+        RequestEventListener requestListener = listener.onRequest(requestStartEvent);
+        requestListener.onEvent(requestMethodStartEvent);
+        requestListener.onEvent(responseFiltersStartEvent);
+    }
+
+    private void executeWithException() {
+        listener.onEvent(appEvent);
+        RequestEventListener requestListener = listener.onRequest(requestStartEvent);
+        requestListener.onEvent(requestMethodStartEvent);
+        requestListener.onEvent(requestMethodExceptionEvent);
+    }
+
+    public static class MockResource implements MockResourceInterface {
+
+        @UnitOfWork(readOnly = false, cacheMode = CacheMode.NORMAL, transactional = true, flushMode = FlushMode.AUTO)
+        public void methodWithDefaultAnnotation() {
+        }
+
+        @UnitOfWork(readOnly = true, cacheMode = CacheMode.NORMAL, transactional = true, flushMode = FlushMode.AUTO)
+        public void methodWithReadOnlyAnnotation() {
+        }
+
+        @UnitOfWork(readOnly = false, cacheMode = CacheMode.IGNORE, transactional = true, flushMode = FlushMode.AUTO)
+        public void methodWithCacheModeIgnoreAnnotation() {
+        }
+
+        @UnitOfWork(readOnly = false, cacheMode = CacheMode.NORMAL, transactional = true, flushMode = FlushMode.ALWAYS)
+        public void methodWithFlushModeAlwaysAnnotation() {
+        }
+
+        @UnitOfWork(readOnly = false, cacheMode = CacheMode.NORMAL, transactional = false, flushMode = FlushMode.AUTO)
+        public void methodWithTransactionalFalseAnnotation() {
+        }
+
+        @UnitOfWork(readOnly = true)
+        @Override
+        public void handlingMethodAnnotated() {
+        }
+
+        @Override
+        public void definitionMethodAnnotated() {
+        }
+
+        @UnitOfWork(readOnly = false)
+        @Override
+        public void bothMethodsAnnotated() {
+
+        }
+    }
+
+    public static interface MockResourceInterface {
+
+        void handlingMethodAnnotated();
+
+        @UnitOfWork(readOnly = true)
+        void definitionMethodAnnotated();
+
+        @UnitOfWork(readOnly = true)
+        void bothMethodsAnnotated();
+    }
+}

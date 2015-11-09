@@ -33,6 +33,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 /**
@@ -157,7 +158,7 @@ public class Recipe {
     @Override
     public String toString() {
 //@formatter:off
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("id", this.id)
                 .add("ingredients", this.ingredients)
                 .add("instructions", this.instructions)

@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.astonish</groupId>
         <artifactId>dropwizard-routing</artifactId>
-        <version>0.7.2-SNAPSHOT</version>
+        <version>0.8.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>dropwizard-routing-hibernate</artifactId>
@@ -28,21 +28,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.easytesting</groupId>
-            <artifactId>fest-assert-core</artifactId>
-            <version>${easytesting.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>${powermock.version}</version>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

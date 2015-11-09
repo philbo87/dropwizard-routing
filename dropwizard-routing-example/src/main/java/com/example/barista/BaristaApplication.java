@@ -82,15 +82,13 @@ public class BaristaApplication extends Application<BaristaConfiguration> {
      * com.codahale.dropwizard.setup.Environment)
      */
     @Override
-    @SuppressWarnings("unchecked")
     public void run(BaristaConfiguration config, Environment environment) throws Exception {
-        environment.jersey().getResourceConfig().getContainerRequestFilters().add(new RoutingRequestFilterHeaderImpl());
-
         final BaristaDaoRouter daoRouter = new BaristaDaoRouter(hibernateBundle.getSessionFactoryMap());
         environment.jersey().register(new BaristaResource(daoRouter));
         environment.jersey().register(new IngredientResource(daoRouter));
         environment.jersey().register(new RecipeResource(daoRouter));
         environment.jersey().register(new StoreResource());
+        environment.jersey().register(RoutingRequestFilterHeaderImpl.class);
     }
 
     public static void main(String[] args) throws Exception {

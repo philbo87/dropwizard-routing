@@ -38,8 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 public class RoutingHibernateBundleTest {
@@ -131,8 +130,8 @@ public class RoutingHibernateBundleTest {
     public void registersATransactionalAdapter() throws Exception {
         bundle.run(configuration, environment);
 
-        final ArgumentCaptor<RoutingUnitOfWorkResourceMethodDispatchAdapter> captor = ArgumentCaptor
-                .forClass(RoutingUnitOfWorkResourceMethodDispatchAdapter.class);
+        final ArgumentCaptor<RoutingUnitOfWorkApplicationListener> captor = ArgumentCaptor
+                .forClass(RoutingUnitOfWorkApplicationListener.class);
         verify(jerseyEnvironment).register(captor.capture());
 
         assertThat(captor.getValue().getSessionFactoryMap()).containsValue(sessionFactoryRouteOne);
